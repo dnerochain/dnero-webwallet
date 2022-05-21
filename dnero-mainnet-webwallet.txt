@@ -1,0 +1,10 @@
+DNERO - WEBWALLET
+============================
+
+============================
+#
+#
+"repository": {
+  "type": "git",
+  "url": "git://github.com/username/repository.git"
+}
