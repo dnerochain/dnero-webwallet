@@ -1,9 +1,9 @@
 import * as actionTypes from "../types/Nodes";
 
 const INITIAL_STATE = {
-    isFetchingGuardianNodeDelegates: false,
+    isFetchingSentryNodeDelegates: false,
 
-    guardianNodeDelegates: [],
+    sentryNodeDelegates: [],
 };
 
 export const nodesReducer = (state = INITIAL_STATE, action) => {
@@ -11,20 +11,20 @@ export const nodesReducer = (state = INITIAL_STATE, action) => {
         //ERC20 Transactions
         case actionTypes.FETCH_GUARDIAN_NODE_DELEGATES_START: {
             return Object.assign({}, state, {
-                isFetchingGuardianNodeDelegates: true
+                isFetchingSentryNodeDelegates: true
             });
         }
         case actionTypes.FETCH_GUARDIAN_NODE_DELEGATES_END: {
             return Object.assign({}, state, {
-                isFetchingGuardianNodeDelegates: false
+                isFetchingSentryNodeDelegates: false
             });
         }
         case actionTypes.FETCH_GUARDIAN_NODE_DELEGATES_SUCCESS: {
             let body = action.response.body;
-            let guardianNodeDelegates = body;
+            let sentryNodeDelegates = body;
 
             return Object.assign({}, state, {
-                guardianNodeDelegates: guardianNodeDelegates,
+                sentryNodeDelegates: sentryNodeDelegates,
             });
         }
 

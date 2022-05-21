@@ -4,8 +4,8 @@ import {
     FETCH_GUARDIAN_NODE_DELEGATES
 } from "../types/Nodes";
 
-export function fetchGuardianNodeDelegates() {
+export function fetchSentryNodeDelegates() {
     return reduxFetch(FETCH_GUARDIAN_NODE_DELEGATES, function () {
-        return Api.fetchGuardianNodeDelegates();
+        return Api.fetchSentryNodeDelegates();
     });
 }
