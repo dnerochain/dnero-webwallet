@@ -1,5 +1,6 @@
-//const BASE_URL = "https://api-wallet.thetatoken.org";
-const BASE_URL = "http://143.198.111.119:7554/api/";
+//
+//const BASE_URL = "https://api-wallet.dnerochain.org";
+const BASE_URL = "http://164.92.98.151:3000/api/"; //Actual Dnero Web-Wallet IP
 
 const DEFAULT_HEADERS = {
     'Accept': 'application/json',
@@ -164,7 +165,7 @@ export default class Api {
     //
 
     static callFaucet(address, faucetId) {
-        let url = `https://public-faucet.thetatoken.org/dtoken_faucet`;
+        let url = `https://public-faucet.dnerochain.org/dtoken_faucet`;
 
         return sendRequest(url, "GET", null, {
             address: address.toLowerCase(),
@@ -173,11 +174,11 @@ export default class Api {
     }
 
     //
-    //Guardian Node Delegates
+    //Sentry Node Delegates
     //
 
-    static fetchGuardianNodeDelegates() {
-        let url = `https://api.thetatoken.org/v1/guardian/delegated-nodes`;
+    static fetchSentryNodeDelegates() {
+        let url = `https://api.dnerochain.org/v1/sentry/delegated-nodes`;
 
         return sendRequest(url, "GET", null, null);
     }

@@ -1,4 +1,4 @@
-import * as thetajs from '@thetalabs/theta-js';
+import * as dnerojs from '@dnerolabs/dnero-js';
 import _ from 'lodash';
 import Api from '../../services/Api'
 import {reduxFetch} from './Api'
@@ -13,7 +13,7 @@ import Dnero from "../../services/Dnero";
 import Timeout from 'await-timeout';
 import {hideLoader, hideModal, hideModals, showLoader, showModal} from "./ui";
 import Alerts from "../../services/Alerts";
-import ThetaJS from "../../libs/thetajs.esm";
+import DneroJS from "../../libs/dnerojs.esm";
 import ContractModes from "../../constants/ContractModes";
 import Router from "../../services/Router";
 import ModalTypes from "../../constants/ModalTypes";
@@ -51,7 +51,7 @@ export async function createSmartContractTransactionAsync(dispatch, network, con
         let address = Wallet.getWalletAddress();
         let sequence = await Wallet.getDneroTxSequence(address, network);
         let unsignedTx = Dnero.unsignedSmartContractTx(txData, sequence);
-        const rawTxBytes = ThetaJS.TxSigner.serializeTx(unsignedTx);
+        const rawTxBytes = DneroJS.TxSigner.serializeTx(unsignedTx);
         const rawTxHex = rawTxBytes.toString('hex').slice(2);
         let signedTx = await Wallet.signTransaction(network, unsignedTx, password);
 
@@ -130,7 +130,7 @@ export function createSmartContractTransaction(contractMode, contractAbi, txData
         try {
             let address = Wallet.getWalletAddress();
             const provider = Wallet.controller.provider;
-            const transaction = new thetajs.transactions.SmartContractTransaction(txData);
+            const transaction = new dnerojs.transactions.SmartContractTransaction(txData);
             let sequence = await provider.getTransactionCount(address);
             sequence = sequence + 1;
             transaction.setSequence(sequence);
@@ -255,7 +255,7 @@ export function approveTransactionRequest(transactionRequestId, password) {
         }
         catch (error) {
             dispatch(hideLoader());
-            const humanizedErrorMessage = thetajs.errors.humanizeErrorMessage(error.message);
+            const humanizedErrorMessage = dnerojs.errors.humanizeErrorMessage(error.message);
             Alerts.showError(humanizedErrorMessage);
             return false;
         }

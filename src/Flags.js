@@ -1,6 +1,6 @@
 import Dnero from './services/Dnero';
 import Networks, {canViewSmartContracts} from './constants/Networks';
-import ThetaJS from "./libs/thetajs.esm";
+import DneroJS from "./libs/dnerojs.esm";
 
 export function isStakingAvailable(){
     return true;
@@ -17,13 +17,13 @@ export function areSmartContractsAvailable(){
 }
 
 export function getMinStakeAmount(purpose){
-    if(purpose === ThetaJS.StakePurposes.StakeForValidator){
+    if(purpose === DneroJS.StakePurposes.StakeForValidator){
         return 2000000.0;
     }
-    else if(purpose === ThetaJS.StakePurposes.StakeForGuardian){
+    else if(purpose === DneroJS.StakePurposes.StakeForSentry){
         return 1000.0;
     }
-    else if(purpose === ThetaJS.StakePurposes.StakeForEliteEdge){
+    else if(purpose === DneroJS.StakePurposes.StakeForEliteEdge){
         return 10000.0;
     }
 
@@ -32,7 +32,7 @@ export function getMinStakeAmount(purpose){
 }
 
 export function getMaxStakeAmount(purpose){
-    if(purpose === ThetaJS.StakePurposes.StakeForEliteEdge){
+    if(purpose === DneroJS.StakePurposes.StakeForEliteEdge){
         return 500000.0;
     }
 
@@ -41,7 +41,7 @@ export function getMaxStakeAmount(purpose){
 }
 
 export function getMaxDelegatedStakeAmount(purpose){
-    if(purpose === ThetaJS.StakePurposes.StakeForGuardian){
+    if(purpose === DneroJS.StakePurposes.StakeForSentry){
         return 10000.0;
     }
 
