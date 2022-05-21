@@ -1,13 +1,13 @@
 {
   "name": "dnero-webwallet",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "dependencies": {
     "@ledgerhq/hw-app-eth": "^4.72.1",
     "@ledgerhq/hw-transport-u2f": "^4.72.1",
     "@ledgerhq/hw-transport-webusb": "^6.2.0",
-    "@thetalabs/theta-js": "^0.0.67",
-    "@thetalabs/tnt20-contract-metadata": "^1.0.2",
+    "@dnerolabs/dnero-js": "git://github.com/muroko/dnero-js.git",
+    "@dnerolabs/dnc20-contract-metadata": "git://github.com/muroko/dnc20-contract-metadata.git",
     "@ukstv/jazzicon-react": "^1.0.0",
     "await-timeout": "^0.3.0",
     "bignumber.js": "^8.0.1",
