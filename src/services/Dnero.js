@@ -1,6 +1,6 @@
 import {BigNumber} from 'bignumber.js';
 import Ethereum from "./Ethereum";
-import ThetaJS from '../libs/thetajs.esm';
+import DneroJS from '../libs/dnerojs.esm';
 import TokenTypes from "../constants/TokenTypes";
 import Config from '../Config';
 import RLP from 'eth-lib/lib/rlp';
@@ -59,7 +59,7 @@ export default class Dnero {
             }
         ];
 
-        let tx = new ThetaJS.SendTx(senderAddr, outputs, feeInDTokenWei, senderSequence);
+        let tx = new DneroJS.SendTx(senderAddr, outputs, feeInDTokenWei, senderSequence);
 
         return tx;
     }
@@ -74,14 +74,14 @@ export default class Dnero {
 
         let tx = null;
 
-        if(purpose === ThetaJS.StakePurposes.StakeForValidator){
-            tx = new ThetaJS.DepositStakeTx(source, holder, amountWeiToSend, feeInDTokenWei, purpose, senderSequence);
+        if(purpose === DneroJS.StakePurposes.StakeForValidator){
+            tx = new DneroJS.DepositStakeTx(source, holder, amountWeiToSend, feeInDTokenWei, purpose, senderSequence);
         }
-        else if(purpose === ThetaJS.StakePurposes.StakeForGuardian){
-            tx = new ThetaJS.DepositStakeV2Tx(source, holder, amountWeiToSend, feeInDTokenWei, purpose, senderSequence);
+        else if(purpose === DneroJS.StakePurposes.StakeForSentry){
+            tx = new DneroJS.DepositStakeV2Tx(source, holder, amountWeiToSend, feeInDTokenWei, purpose, senderSequence);
         }
-        else if(purpose === ThetaJS.StakePurposes.StakeForEliteEdge){
-            tx = new ThetaJS.DepositStakeV2Tx(source, holder, amountWeiToSend, feeInDTokenWei, purpose, senderSequence);
+        else if(purpose === DneroJS.StakePurposes.StakeForEliteEdge){
+            tx = new DneroJS.DepositStakeV2Tx(source, holder, amountWeiToSend, feeInDTokenWei, purpose, senderSequence);
         }
 
         return tx;
@@ -95,7 +95,7 @@ export default class Dnero {
         const source =  from;
         const senderSequence = sequence;
 
-        let tx = new ThetaJS.WithdrawStakeTx(source, holder, feeInDTokenWei, purpose, senderSequence);
+        let tx = new DneroJS.WithdrawStakeTx(source, holder, feeInDTokenWei, purpose, senderSequence);
 
         return tx;
     }
@@ -108,7 +108,7 @@ export default class Dnero {
         const senderSequence = sequence;
         const gasPrice = feeInDTokenWei;
 
-        let tx = new ThetaJS.SmartContractTx(from, to, gasLimit, gasPrice, data, value, senderSequence);
+        let tx = new DneroJS.SmartContractTx(from, to, gasLimit, gasPrice, data, value, senderSequence);
 
         return tx;
     }
@@ -118,13 +118,13 @@ export default class Dnero {
     }
 
     static isValidHolderSummary(purpose, holderSummary){
-        return ThetaJS.DepositStakeV2Tx.isValidHolderSummary(purpose, holderSummary);
+        return DneroJS.DepositStakeV2Tx.isValidHolderSummary(purpose, holderSummary);
     }
 
     static async signTransaction(unsignedTx, privateKey){
         let chainID = Dnero.getChainID();
         // let unsignedTx = Dnero.unsignedSendTx(txData, sequence);
-        let signedRawTxBytes = ThetaJS.TxSigner.signAndSerializeTx(chainID, unsignedTx, privateKey);
+        let signedRawTxBytes = DneroJS.TxSigner.signAndSerializeTx(chainID, unsignedTx, privateKey);
         let signedTxRaw = signedRawTxBytes.toString('hex');
 
         //Remove the '0x' until the RPC endpoint supports '0x' prefixes

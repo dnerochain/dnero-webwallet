@@ -1,4 +1,4 @@
-import ThetaJS from '../libs/thetajs.esm';
+import DneroJS from '../libs/dnerojs.esm';
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 import TransportU2F from "@ledgerhq/hw-transport-u2f";
 import Eth from "@ledgerhq/hw-app-eth";
@@ -15,7 +15,7 @@ export default class Ledger {
         let signature = '0x' + sig.r + sig.s + (parseInt(sig.v, 16) - 27).toString().padStart(2, '0');
         unsignedTx.setSignature(signature);
 
-        let signedRawTxBytes = ThetaJS.TxSigner.serializeTx(unsignedTx);
+        let signedRawTxBytes = DneroJS.TxSigner.serializeTx(unsignedTx);
         let signedTxRaw = signedRawTxBytes.toString('hex');
 
         //Remove the '0x' until the RPC endpoint supports '0x' prefixes
@@ -47,7 +47,7 @@ export default class Ledger {
         let signature = '0x' + sig.r + sig.s + (parseInt(sig.v, 16) - 27).toString().padStart(2, '0');
         unsignedTx.setSignature(signature);
 
-        let signedRawTxBytes = ThetaJS.TxSigner.serializeTx(unsignedTx);
+        let signedRawTxBytes = DneroJS.TxSigner.serializeTx(unsignedTx);
         let signedTxRaw = signedRawTxBytes.toString('hex');
 
         //Remove the '0x' until the RPC endpoint supports '0x' prefixes

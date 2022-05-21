@@ -1,4 +1,4 @@
-import ThetaJS from '../libs/thetajs.esm';
+import DneroJS from '../libs/dnerojs.esm';
 import TrezorConnect from 'trezor-connect';
 import Web3 from 'web3';
 import Wallet from './Wallet'
@@ -29,7 +29,7 @@ export default class Trezor {
         }
         let signature = signedTx.payload.r + signedTx.payload.s.slice(2) + (parseInt(signedTx.payload.v, 16) - 37).toString().padStart(2, '0');
         unsignedTx.setSignature(signature);
-        let signedRawTxBytes = ThetaJS.TxSigner.serializeTx(unsignedTx);
+        let signedRawTxBytes = DneroJS.TxSigner.serializeTx(unsignedTx);
         let signedTxRaw = signedRawTxBytes.toString('hex');
 
         //Remove the '0x' until the RPC endpoint supports '0x' prefixes

@@ -11,7 +11,7 @@ import Web3 from "web3";
 import {useForm} from 'react-hook-form';
 import Dnero from "../services/Dnero";
 import Wallet from "../services/Wallet";
-import ThetaJS from "../libs/thetajs.esm";
+import DneroJS from "../libs/dnerojs.esm";
 import {store} from "../state";
 import PageHeader from "../components/PageHeader";
 import {getQueryParameters, zipMap} from "../utils/Utils";
@@ -458,7 +458,7 @@ class InteractWithContractContent extends React.Component {
                 transactionFee: gasPrice,
                 gasLimit: gasLimit
             }, senderSequence);
-            const rawTxBytes = ThetaJS.TxSigner.serializeTx(tx);
+            const rawTxBytes = DneroJS.TxSigner.serializeTx(tx);
 
             try{
                 const callResponse = await Api.callSmartContract({data: rawTxBytes.toString('hex').slice(2)}, {network: Dnero.getChainID()});
