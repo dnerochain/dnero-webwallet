@@ -1,4 +1,4 @@
-import * as thetajs from '@thetalabs/theta-js';
+import * as dnerojs from '@dnerolabs/dnero-js';
 
 const { EventEmitter } = require('events');
 
@@ -20,7 +20,7 @@ class SimpleKeyring extends EventEmitter{
         return new Promise((resolve, reject) => {
             try {
                 this.wallets = privateKeys.map((privateKey) => {
-                    const wallet = new thetajs.Wallet(privateKey);
+                    const wallet = new dnerojs.Wallet(privateKey);
                     return wallet;
                 });
             } catch (e) {
@@ -33,7 +33,7 @@ class SimpleKeyring extends EventEmitter{
     addAccounts (n = 1) {
         const newWallets = [];
         for (let i = 0; i < n; i++) {
-            const wallet = thetajs.Wallet.createRandom(null);
+            const wallet = dnerojs.Wallet.createRandom(null);
             newWallets.push(wallet);
         }
         this.wallets = this.wallets.concat(newWallets);

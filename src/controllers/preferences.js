@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import ObservableStore from '../utils/ObservableStore';
-import * as thetajs from '@thetalabs/theta-js';
+import * as dnerojs from '@dnerolabs/dnero-js';
 
 const { EventEmitter } = require('events');
 
@@ -35,17 +35,17 @@ export default class PreferencesController  extends EventEmitter {
             selectedAddress: null,
 
             network: {
-                chainId: thetajs.networks.ChainIds.Mainnet,
+                chainId: dnerojs.networks.ChainIds.Mainnet,
             },
 
-            delegatedGuardianNodes: [],
+            delegatedSentryNodes: [],
 
             ...opts.initState,
         };
 
         this.store = new ObservableStore(initState);
 
-        this.updateDelegatedGuardianNodes();
+        this.updateDelegatedSentryNodes();
     }
 
 
@@ -410,18 +410,18 @@ export default class PreferencesController  extends EventEmitter {
     }
 
     /**
-     * Calls API to get the delegated guardian nodes
+     * Calls API to get the delegated sentry nodes
      * @returns {Object}
      */
-    async updateDelegatedGuardianNodes(){
-        let delegatedGuardianNodes = null;
+    async updateDelegatedSentryNodes(){
+        let delegatedSentryNodes = null;
 
         try {
-            const url = `https://api.thetatoken.org/v1/guardian/delegated-nodes`;
+            const url = `https://api.dnerochain.org/v1/sentry/delegated-nodes`;
             const response = await fetch(url);
             const responseJson = await response.json();
-            delegatedGuardianNodes = responseJson;
-            delegatedGuardianNodes = _.map(delegatedGuardianNodes, (node) => {
+            delegatedSentryNodes = responseJson;
+            delegatedSentryNodes = _.map(delegatedSentryNodes, (node) => {
                 const [fee, address] = node.address.split(' fee - ');
 
                 return {
@@ -437,8 +437,8 @@ export default class PreferencesController  extends EventEmitter {
         }
 
         // Update states
-        this.store.updateState({ delegatedGuardianNodes });
+        this.store.updateState({ delegatedSentryNodes });
 
-        return delegatedGuardianNodes;
+        return delegatedSentryNodes;
     }
 }

@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import React from 'react';
-import * as thetajs from '@thetalabs/theta-js';
+import * as dnerojs from '@dnerolabs/dnero-js';
 import './TxConfirmationModal.css';
 import connect from "react-redux/es/connect/connect";
 import Modal from '../components/Modal'
@@ -11,12 +11,12 @@ import {
     rejectTransactionRequest
 } from "../state/actions/Transactions";
 import {
-    formatNativeTokenAmountToLargestUnit, formatTNT20TokenAmountToLargestUnit,
+    formatNativeTokenAmountToLargestUnit, formatDNC20TokenAmountToLargestUnit,
     transactionRequestToTransactionType,
     transactionTypeToName, truncate
 } from "../utils/Utils";
 import {DefaultAssets, getAllAssets, tokenToAsset} from "../constants/assets";
-import {TNT20ABI} from '../constants/contracts';
+import {DNC20ABI} from '../constants/contracts';
 import FlatButton from "../components/buttons/FlatButton";
 import {store} from "../state";
 import MDSpinner from "react-md-spinner";
@@ -78,7 +78,7 @@ export class ConfirmTransactionModal extends React.Component {
         const txData = _.get(transactionRequest, 'txData');
         const stakePurpose = _.get(transactionRequest, 'txData.purpose');
 
-        if(txType === thetajs.constants.TxType.Send){
+        if(txType === dnerojs.constants.TxType.Send){
             const dneroWei = _.get(transactionRequest, 'txData.outputs[0].dneroWei', null);
             const dtokenWei = _.get(transactionRequest, 'txData.outputs[0].dtokenWei', null);
 
@@ -92,7 +92,7 @@ export class ConfirmTransactionModal extends React.Component {
                 </React.Fragment>
             );
         }
-        if(txType === thetajs.constants.TxType.SmartContract){
+        if(txType === dnerojs.constants.TxType.SmartContract){
             const transactionName = transactionRequestToTransactionType(transactionRequest);
             const contractAddress = _.get(transactionRequest, 'txData.to', null);
             const value = _.get(transactionRequest, 'txData.value');
@@ -106,8 +106,8 @@ export class ConfirmTransactionModal extends React.Component {
 
             try {
                 const contractData = _.get(txData, 'data');
-                const tnt20Contract = new thetajs.Contract(null, TNT20ABI, null);
-                const data = tnt20Contract.interface.decodeFunctionData('transfer(address,uint256)',contractData);
+                const dnc20Contract = new dnerojs.Contract(null, DNC20ABI, null);
+                const data = dnc20Contract.interface.decodeFunctionData('transfer(address,uint256)',contractData);
                 transferToAddress = data[0];
                 transferToValue = data[1].toString();
                 symbol = asset && asset.symbol;
@@ -123,14 +123,14 @@ export class ConfirmTransactionModal extends React.Component {
                     { !_.isNil(contractAddress) && renderDataRow('Contract', truncate(_.get(transactionRequest, 'txData.to'))) }
                     { renderDataRow('From', truncate(selectedAddress)) }
                     { !_.isNil(transferToAddress) && renderDataRow('To', truncate(transferToAddress)) }
-                    { (!_.isNil(transferToAddress) && symbol && transferToValue) && renderDataRow('Token Amount', formatTNT20TokenAmountToLargestUnit(transferToValue, decimals), ` ${symbol}`) }
+                    { (!_.isNil(transferToAddress) && symbol && transferToValue) && renderDataRow('Token Amount', formatDNC20TokenAmountToLargestUnit(transferToValue, decimals), ` ${symbol}`) }
                     { (!_.isNil(value) && value > 0) && renderDataRow('Value', formatNativeTokenAmountToLargestUnit(value), ' DTOKEN') }
                     { renderDataRow('Data', _.get(transactionRequest, 'txData.data'), null, true) }
 
                 </React.Fragment>
             );
         }
-        if(txType === thetajs.constants.TxType.WithdrawStake){
+        if(txType === dnerojs.constants.TxType.WithdrawStake){
             return (
                 <React.Fragment>
                     { renderDataRow('Transaction Type', transactionTypeToName(txType)) }
@@ -139,7 +139,7 @@ export class ConfirmTransactionModal extends React.Component {
                 </React.Fragment>
             );
         }
-        if(txType === thetajs.constants.TxType.DepositStake){
+        if(txType === dnerojs.constants.TxType.DepositStake){
             return (
                 <React.Fragment>
                     { renderDataRow('Transaction Type', transactionTypeToName(txType)) }
@@ -150,26 +150,26 @@ export class ConfirmTransactionModal extends React.Component {
                 </React.Fragment>
             );
         }
-        if(txType === thetajs.constants.TxType.DepositStakeV2){
+        if(txType === dnerojs.constants.TxType.DepositStakeV2){
             return (
                 <React.Fragment>
                     { renderDataRow('Transaction Type', transactionTypeToName(txType)) }
                     {
-                        (stakePurpose === thetajs.constants.StakePurpose.StakeForEliteEdge) &&
+                        (stakePurpose === dnerojs.constants.StakePurpose.StakeForEliteEdge) &&
                         renderDataRow('Purpose', 'Edge Node')
                     }
                     {
-                        (stakePurpose === thetajs.constants.StakePurpose.StakeForGuardian) &&
-                        renderDataRow('Purpose', 'Guardian Node')
+                        (stakePurpose === dnerojs.constants.StakePurpose.StakeForSentry) &&
+                        renderDataRow('Purpose', 'Sentry Node')
                     }
                     { renderDataRow('From', truncate(selectedAddress)) }
                     { renderDataRow('Holder summary', _.get(transactionRequest, 'txData.holderSummary'), null, true) }
                     {
-                        (stakePurpose === thetajs.constants.StakePurpose.StakeForEliteEdge) &&
+                        (stakePurpose === dnerojs.constants.StakePurpose.StakeForEliteEdge) &&
                         renderDataRow('Amount', formatNativeTokenAmountToLargestUnit(_.get(transactionRequest, 'txData.amount')), ' DTOKEN')
                     }
                     {
-                        (stakePurpose === thetajs.constants.StakePurpose.StakeForGuardian) &&
+                        (stakePurpose === dnerojs.constants.StakePurpose.StakeForSentry) &&
                         renderDataRow('Amount', formatNativeTokenAmountToLargestUnit(_.get(transactionRequest, 'txData.amount')), ' DNERO')
                     }
                 </React.Fragment>

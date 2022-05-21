@@ -4,11 +4,11 @@ import { ethers } from 'ethers';
 import _ from 'lodash';
 import FormField from '../../components/FormField';
 import {
-    isValidAmount, getAssetBalance, toNativeTokenLargestUnit, toTNT20TokenLargestUnit
+    isValidAmount, getAssetBalance, toNativeTokenLargestUnit, toDNC20TokenLargestUnit
 } from '../../utils/Utils';
 import {Urls} from '../../constants';
 import Warning from '../../components/Warning';
-import * as thetajs from "@thetalabs/theta-js";
+import * as dnerojs from "@dnerolabs/dnero-js";
 import BigNumber from "bignumber.js";
 import {DTokenAsset, DneroAsset} from "../../constants/assets";
 import FlatButton from "../buttons/FlatButton";
@@ -35,7 +35,7 @@ export default function SendTxForm(props){
         });
 
         if(assetId === DTokenAsset.id){
-            const maxDtokenBN = (new BigNumber(selectedAccount.balances['dtokenwei'])).minus(thetajs.constants.gasPriceDefault);
+            const maxDtokenBN = (new BigNumber(selectedAccount.balances['dtokenwei'])).minus(dnerojs.constants.gasPriceDefault);
             amount = toNativeTokenLargestUnit(maxDtokenBN.toString(10)).toString(10);
         }
         else if (assetId === DneroAsset.id){
@@ -43,7 +43,7 @@ export default function SendTxForm(props){
         }
         else{
             const balance = selectedAccount.balances[asset.address] || '0';
-            amount = toTNT20TokenLargestUnit(balance, asset.decimals).toString(10);
+            amount = toDNC20TokenLargestUnit(balance, asset.decimals).toString(10);
         }
 
         setValue('amount', amount);

@@ -1,5 +1,5 @@
 import ObservableStore from '../utils/ObservableStore';
-import * as thetajs from '@thetalabs/theta-js';
+import * as dnerojs from '@dnerolabs/dnero-js';
 import {nanoid} from 'nanoid';
 import _ from "lodash";
 import BigNumber from "bignumber.js";
@@ -81,13 +81,13 @@ export default class TransactionsController extends EventEmitter{
      */
     async addTransactionRequest(transactionRequest) {
         const fromAddress = this.preferencesController.getSelectedAddress();
-        const transaction = thetajs.transactions.transactionFromJson(transactionRequest);
+        const transaction = dnerojs.transactions.transactionFromJson(transactionRequest);
         transaction.setFrom(fromAddress);
         const gasFeeData = await this.getEstimatedGasData(transaction);
         let transactionDepJson = (transactionRequest.dependencies || [])[0];
 
         if(transactionDepJson){
-            const transactionDep = thetajs.transactions.transactionFromJson(transactionDepJson);
+            const transactionDep = dnerojs.transactions.transactionFromJson(transactionDepJson);
             transactionDep.setFrom(fromAddress);
             const depGasFeeData = await this.getEstimatedGasData(transactionDep);
             transactionDepJson = {
@@ -126,14 +126,14 @@ export default class TransactionsController extends EventEmitter{
         const fromAddress = this.preferencesController.getSelectedAddress();
         const transactionDepJson = (transactionRequest.dependencies || [])[0];
         if(transactionDepJson){
-            const transactionDep = thetajs.transactions.transactionFromJson(transactionDepJson);
+            const transactionDep = dnerojs.transactions.transactionFromJson(transactionDepJson);
             await this.signAndSendTransaction(fromAddress, transactionDep, provider);
 
             if(onDependencySent){
                 onDependencySent();
             }
         }
-        const transaction = thetajs.transactions.transactionFromJson(transactionRequest);
+        const transaction = dnerojs.transactions.transactionFromJson(transactionRequest);
         const result = await this.signAndSendTransaction(fromAddress, transaction, provider);
 
         if(result){
@@ -166,7 +166,7 @@ export default class TransactionsController extends EventEmitter{
     }
 
     _transformTransaction(rawXact, priorityAddress) {
-        if (rawXact.type === thetajs.constants.TxType.Send) {
+        if (rawXact.type === dnerojs.constants.TxType.Send) {
             let xact = {};
 
             xact.type = rawXact.type;
@@ -212,7 +212,7 @@ export default class TransactionsController extends EventEmitter{
         try {
             const network = this.preferencesController.getNetwork();
             const chainId = network.chainId;
-            const explorerUrl = thetajs.networks.getExplorerUrlForChainId(chainId);
+            const explorerUrl = dnerojs.networks.getExplorerUrlForChainId(chainId);
             const explorerApiUrl = `${explorerUrl}:8443/api`;
             const listStakesUrl = `${explorerApiUrl}/accounttx/${address}`;
             const response = await fetch(listStakesUrl);
@@ -247,8 +247,8 @@ export default class TransactionsController extends EventEmitter{
      * @returns {Object}
      */
     async getEstimatedGasData(transaction) {
-        if(transaction.getType() === thetajs.constants.TxType.SmartContract){
-            if(transaction.gasLimit !== thetajs.constants.gasLimitDefault){
+        if(transaction.getType() === dnerojs.constants.TxType.SmartContract){
+            if(transaction.gasLimit !== dnerojs.constants.gasLimitDefault){
                 // Gas fee was set by user...
                 return {
                     gasPrice: transaction.gasPrice.toString(),
@@ -268,15 +268,15 @@ export default class TransactionsController extends EventEmitter{
             const gasLimit = Math.ceil(gasLimitWithBuffer.toNumber());
 
             return {
-                gasPrice: thetajs.constants.gasPriceSmartContractDefault.toString(),
+                gasPrice: dnerojs.constants.gasPriceSmartContractDefault.toString(),
                 gasLimit: gasLimit,
-                totalGasFee: thetajs.constants.gasPriceSmartContractDefault.multipliedBy(gasLimit).toString()
+                totalGasFee: dnerojs.constants.gasPriceSmartContractDefault.multipliedBy(gasLimit).toString()
             }
         }
         else{
             return {
-                gasPrice: thetajs.constants.gasPriceDefault.toString(),
-                totalGasFee: thetajs.constants.gasPriceDefault.toString()
+                gasPrice: dnerojs.constants.gasPriceDefault.toString(),
+                totalGasFee: dnerojs.constants.gasPriceDefault.toString()
             }
         }
     }

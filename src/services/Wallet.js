@@ -1,4 +1,4 @@
-import * as thetajs from '@thetalabs/theta-js';
+import * as dnerojs from '@dnerolabs/dnero-js';
 import { ethers } from 'ethers';
 import _ from "lodash";
 import Ethereum from './Ethereum'
@@ -116,8 +116,8 @@ export default class Wallet {
         // window.__TREZOR_CONNECT_SRC = 'https://localhost:8088/'; //TODO: for dev
 
         TrezorConnect.manifest({
-            email: 'support@thetatoken.org',
-            appUrl: 'https://wallet.thetatoken.org',
+            email: 'support@dnerochain.org',
+            appUrl: 'https://wallet.dnerochain.org',
             keepSession: true
         });
 
@@ -170,7 +170,7 @@ export default class Wallet {
     }
 
     static createWallet(password){
-        const random = thetajs.Wallet.createRandom();
+        const random = dnerojs.Wallet.createRandom();
         const mnemonic = random.mnemonic.phrase;
         let wallet = this.walletFromMnemonic(mnemonic);
         let keystore = this.encryptToKeystore(wallet.privateKey, password);
