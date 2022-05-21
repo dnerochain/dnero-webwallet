@@ -1,11 +1,11 @@
 import _ from 'lodash';
-import * as thetajs from '@thetalabs/theta-js';
+import * as dnerojs from '@dnerolabs/dnero-js';
 import BigNumber from 'bignumber.js';
 import ObservableStore from '../utils/ObservableStore';
 import {SingleCallTokenBalancesAddressByChainId, DDropStakingAddressByChainId} from '../constants';
 import {SingleCallTokenBalancesABI, DDropStakingABI} from '../constants/contracts';
 
-const {tokensByChainId} = require('@thetalabs/tnt20-contract-metadata');
+const {tokensByChainId} = require('@dnerolabs/dnc20-contract-metadata');
 const DEFAULT_INTERVAL = 60 * 1000;
 
 /**
@@ -235,7 +235,7 @@ export default class AccountManager {
         }
 
         try {
-            const balanceCheckContract = new thetajs.Contract(deployedContractAddress, SingleCallTokenBalancesABI, provider);
+            const balanceCheckContract = new dnerojs.Contract(deployedContractAddress, SingleCallTokenBalancesABI, provider);
             const balances = await balanceCheckContract.balances(addresses, tokenAddresses);
             // contract returns a array of length addresses.length * tokens.length so we need to partiton it
             const balancesGroupedByAddress = _.chunk(balances, tokenAddresses.length);
@@ -282,7 +282,7 @@ export default class AccountManager {
             if(_.isNil(deployedContractAddress)){
                 return null;
             }
-            const ddropStakingContract = new thetajs.Contract(deployedContractAddress, DDropStakingABI, provider);
+            const ddropStakingContract = new dnerojs.Contract(deployedContractAddress, DDropStakingABI, provider);
             stakingBalance = await ddropStakingContract.balanceOf(address);
 
             if(!stakingBalance.isZero()){
@@ -315,7 +315,7 @@ export default class AccountManager {
 
         accounts[address] = {
             ...current,
-            tnt20Stakes: {
+            dnc20Stakes: {
                 ddrop: ddropStakingInfo
             }
         };
@@ -330,7 +330,7 @@ export default class AccountManager {
         try {
             const network = this._getNetwork();
             const chainId = network.chainId;
-            const explorerUrl = thetajs.networks.getExplorerUrlForChainId(chainId);
+            const explorerUrl = dnerojs.networks.getExplorerUrlForChainId(chainId);
             const explorerApiUrl = `${explorerUrl}:8443/api`;
             const listStakesUrl = `${explorerApiUrl}/stake/${address}?hasBalance=true&types[]=vcp&types[]=gcp&types[]=eenp`;
             const response = await fetch(listStakesUrl);
@@ -355,7 +355,7 @@ export default class AccountManager {
         };
         this.store.updateState({ accounts });
 
-        // TNT20 stakes
+        // DNC20 stakes
         await this.updateAccountDDropStake(address);
 
         return stakes;
@@ -386,7 +386,7 @@ export default class AccountManager {
             tokensToDetect.slice(0, 1000),
             tokensToDetect.slice(1000, tokensToDetect.length - 1),
         ];
-        const balanceCheckContract = new thetajs.Contract(SingleCallTokenBalancesAddressByChainId[chainId], SingleCallTokenBalancesABI, provider);
+        const balanceCheckContract = new dnerojs.Contract(SingleCallTokenBalancesAddressByChainId[chainId], SingleCallTokenBalancesABI, provider);
 
         for (const tokensSlice of sliceOfTokensToDetect) {
             let result;

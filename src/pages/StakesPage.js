@@ -15,7 +15,7 @@ import {canStakeFromHardwareWallet} from '../Flags';
 import {updateAccountStakes} from "../state/actions/Wallet";
 import {DefaultAssets, getAllAssets, DDropAsset, tokenToAsset} from "../constants/assets";
 import {Jazzicon} from "@ukstv/jazzicon-react";
-import {formatTNT20TokenAmountToLargestUnit, trimDecimalPlaces, truncate} from "../utils/Utils";
+import {formatDNC20TokenAmountToLargestUnit, trimDecimalPlaces, truncate} from "../utils/Utils";
 
 const sampleStakes = [
     {
@@ -121,11 +121,11 @@ class StakesPage extends React.Component {
         const address = dDropAsset.contractAddress;
         const symbol = dDropAsset.symbol;
         const decimals = dDropAsset.decimals;
-        const tnt20stakes = _.get(selectedAccount, ['tnt20Stakes'], {});
-        const balanceStr = _.get(tnt20stakes, 'ddrop.balance', '0');
-        const votingPowerStr = _.get(tnt20stakes, 'ddrop.votingPower', '0');
-        const estimatedDDROPStr = _.get(tnt20stakes, 'ddrop.estimatedTokenOwnedWithRewards', '0');
-        const votingDelegate = _.get(tnt20stakes, 'ddrop.votingDelegate', null);
+        const dnc20stakes = _.get(selectedAccount, ['dnc20Stakes'], {});
+        const balanceStr = _.get(dnc20stakes, 'ddrop.balance', '0');
+        const votingPowerStr = _.get(dnc20stakes, 'ddrop.votingPower', '0');
+        const estimatedDDROPStr = _.get(dnc20stakes, 'ddrop.estimatedTokenOwnedWithRewards', '0');
+        const votingDelegate = _.get(dnc20stakes, 'ddrop.votingDelegate', null);
 
 
         return (
@@ -159,7 +159,7 @@ class StakesPage extends React.Component {
                             <span className={'Balance__amount-title'}>Voting power: </span><span className={'Balance__amount-value'}>{`${trimDecimalPlaces(votingPowerStr, 5)}%`}</span>
                         </div>
                         <div className={'Balance__amount-title-and-value'}>
-                            <span className={'Balance__amount-title'}>Staked + reward (est.): </span><span className={'Balance__amount-value'}>{trimDecimalPlaces(formatTNT20TokenAmountToLargestUnit(estimatedDDROPStr, decimals), 5)}</span>
+                            <span className={'Balance__amount-title'}>Staked + reward (est.): </span><span className={'Balance__amount-value'}>{trimDecimalPlaces(formatDNC20TokenAmountToLargestUnit(estimatedDDROPStr, decimals), 5)}</span>
                         </div>
                         <div className={'Balance__amount-title-and-value'}>
                             <span className={'Balance__amount-title'}>Votes delegated to:</span><span className={'Balance__amount-value'}>{truncate(votingDelegate)}</span>

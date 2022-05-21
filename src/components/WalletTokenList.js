@@ -4,7 +4,7 @@ import './WalletTokenList.css';
 import WalletTokenListItem from './WalletTokenListItem'
 import Dnero from '../services/Dnero';
 import moment from "moment";
-import {formatNativeTokenAmountToLargestUnit, formatTNT20TokenAmountToLargestUnit} from "../utils/Utils";
+import {formatNativeTokenAmountToLargestUnit, formatDNC20TokenAmountToLargestUnit} from "../utils/Utils";
 import {showModal} from "../state/actions/ui";
 import ModalTypes from "../constants/ModalTypes";
 import {store} from "../state";
@@ -30,7 +30,7 @@ class WalletTokenList extends React.Component {
                         return (
                             <WalletTokenListItem key={asset.id}
                                                  token={asset}
-                                                 balance={formatTNT20TokenAmountToLargestUnit(balanceStr, decimals)}
+                                                 balance={formatDNC20TokenAmountToLargestUnit(balanceStr, decimals)}
                             />
                         )
                     })

@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import Networks from '../constants/Networks'
 import BigNumber from 'bignumber.js';
-import {Ten18} from '@thetalabs/theta-js/src/constants';
+import {Ten18} from '@dnerolabs/dnero-js/src/constants';
 import {DefaultAssets, getAllAssets, tokenToAsset} from "../constants/assets";
-import * as thetajs from "@thetalabs/theta-js";
-import {DDropStakingABI, TNT20ABI} from "../constants/contracts";
+import * as dnerojs from "@dnerolabs/dnero-js";
+import {DDropStakingABI, DNC20ABI} from "../constants/contracts";
 import {StakePurposeForDDROP, DDropAddressByChainId, DDropStakingAddressByChainId} from "../constants";
 
 
@@ -145,7 +145,7 @@ export function chainIDStringToNumber(chainIDstr) {
 
 
 
-export const formatTNT20TokenAmountToLargestUnit = (number, decimals ) => {
+export const formatDNC20TokenAmountToLargestUnit = (number, decimals ) => {
     const bn = new BigNumber(number);
     const DecimalsBN = (new BigNumber(10)).pow(decimals);
     // Round down
@@ -161,7 +161,7 @@ export const formatNativeTokenAmountToLargestUnit = (number ) => {
     return numberWithCommas(fixed);
 };
 
-export const toTNT20TokenSmallestUnit = (number, decimals ) => {
+export const toDNC20TokenSmallestUnit = (number, decimals ) => {
     const bn = new BigNumber(number);
     const DecimalsBN = (new BigNumber(10)).pow(decimals);
     return bn.multipliedBy(DecimalsBN);
@@ -172,7 +172,7 @@ export const toNativeTokenSmallestUnit = (number ) => {
     return bn.multipliedBy(Ten18);
 };
 
-export const toTNT20TokenLargestUnit = (number, decimals ) => {
+export const toDNC20TokenLargestUnit = (number, decimals ) => {
     const bn = new BigNumber(number);
     const DecimalsBN = (new BigNumber(10)).pow(decimals);
     return bn.dividedBy(DecimalsBN);
@@ -202,7 +202,7 @@ export const isValidAmount = (selectedAccount, asset, amount) => {
     }
     else{
         // TNT-20 token
-        amountBN = toTNT20TokenSmallestUnit('' + amount, asset.decimals);
+        amountBN = toDNC20TokenSmallestUnit('' + amount, asset.decimals);
         balanceBN = new BigNumber(selectedAccount.balances[asset.contractAddress]);
     }
 
@@ -218,7 +218,7 @@ export const getAssetBalance = (selectedAccount, asset) => {
     }
 
     const balance = selectedAccount.balances[asset.contractAddress] || '0';
-    return formatTNT20TokenAmountToLargestUnit(balance, asset.decimals);
+    return formatDNC20TokenAmountToLargestUnit(balance, asset.decimals);
 };
 
 
@@ -237,11 +237,11 @@ export const formDataToTransaction = async (transactionType, txFormData, dneroWa
         });
 
         if (asset.contractAddress) {
-            // TNT20 token
+            // DNC20 token
             // TODO ensure they have the balance
-            const tnt20Contract = new thetajs.Contract(asset.contractAddress, TNT20ABI, null);
-            const amountBN = toTNT20TokenSmallestUnit(amount, asset.decimals);
-            return await tnt20Contract.populateTransaction.transfer(to, amountBN.toString());
+            const dnc20Contract = new dnerojs.Contract(asset.contractAddress, DNC20ABI, null);
+            const amountBN = toDNC20TokenSmallestUnit(amount, asset.decimals);
+            return await dnc20Contract.populateTransaction.transfer(to, amountBN.toString());
         }
         else {
             // Native token
@@ -250,13 +250,13 @@ export const formDataToTransaction = async (transactionType, txFormData, dneroWa
                 outputs: [
                     {
                         address: to,
-                        dneroWei: (assetId === 'dnero' ? thetajs.utils.toWei(amount) : '0'),
-                        dtokenWei: (assetId === 'dtoken' ? thetajs.utils.toWei(amount) : '0')
+                        dneroWei: (assetId === 'dnero' ? dnerojs.utils.toWei(amount) : '0'),
+                        dtokenWei: (assetId === 'dtoken' ? dnerojs.utils.toWei(amount) : '0')
                     }
                 ]
             };
 
-            return new thetajs.transactions.SendTransaction(txData);
+            return new dnerojs.transactions.SendTransaction(txData);
         }
     }
     if(transactionType === 'withdraw-stake'){
@@ -265,10 +265,10 @@ export const formDataToTransaction = async (transactionType, txFormData, dneroWa
 
         if(purposeInt === StakePurposeForDDROP){
             const dDropStakingAddress = DDropStakingAddressByChainId[chainId];
-            const ddropStakingContract = new thetajs.Contract(dDropStakingAddress, DDropStakingABI, null);
+            const ddropStakingContract = new dnerojs.Contract(dDropStakingAddress, DDropStakingABI, null);
             const percentageToUnstake = parseFloat(amount) / 100;
-            const tnt20stakes = _.get(selectedAccount, ['tnt20Stakes'], {});
-            const balanceStr = _.get(tnt20stakes, 'ddrop.balance', '0');
+            const dnc20stakes = _.get(selectedAccount, ['dnc20Stakes'], {});
+            const balanceStr = _.get(dnc20stakes, 'ddrop.balance', '0');
             const balanceBN = new BigNumber(balanceStr);
             const amountBN = balanceBN.multipliedBy(percentageToUnstake).integerValue();
             const unstakeTx = await ddropStakingContract.populateTransaction.unstake(amountBN.toString());
@@ -281,48 +281,48 @@ export const formDataToTransaction = async (transactionType, txFormData, dneroWa
                 purpose: purpose
             };
 
-            return new thetajs.transactions.WithdrawStakeTransaction(txData);
+            return new dnerojs.transactions.WithdrawStakeTransaction(txData);
         }
     }
     if(transactionType === 'deposit-stake'){
         const {holder, holderSummary, purpose, amount} = txFormData;
         const purposeInt = parseInt(purpose);
 
-        if(purposeInt === thetajs.constants.StakePurpose.StakeForValidator){
+        if(purposeInt === dnerojs.constants.StakePurpose.StakeForValidator){
             const txData = {
                 holder: holder,
                 purpose: purposeInt,
-                amount: thetajs.utils.toWei(amount),
+                amount: dnerojs.utils.toWei(amount),
             };
 
-            return new thetajs.transactions.DepositStakeTransaction(txData);
+            return new dnerojs.transactions.DepositStakeTransaction(txData);
         }
-        else if(purposeInt === thetajs.constants.StakePurpose.StakeForGuardian){
+        else if(purposeInt === dnerojs.constants.StakePurpose.StakeForSentry){
             const txData = {
                 holderSummary: holderSummary,
                 purpose: purposeInt,
-                amount: thetajs.utils.toWei(amount),
+                amount: dnerojs.utils.toWei(amount),
             };
 
-            return new thetajs.transactions.DepositStakeV2Transaction(txData);
+            return new dnerojs.transactions.DepositStakeV2Transaction(txData);
         }
-        else if(purposeInt === thetajs.constants.StakePurpose.StakeForEliteEdge){
+        else if(purposeInt === dnerojs.constants.StakePurpose.StakeForEliteEdge){
             const txData = {
                 holderSummary: holderSummary,
                 purpose: purposeInt,
-                amount: thetajs.utils.toWei(amount),
+                amount: dnerojs.utils.toWei(amount),
             };
 
-            return new thetajs.transactions.DepositStakeV2Transaction(txData);
+            return new dnerojs.transactions.DepositStakeV2Transaction(txData);
         }
         else if(purposeInt === StakePurposeForDDROP){
             const dDropAddress = DDropAddressByChainId[chainId];
             const dDropStakingAddress = DDropStakingAddressByChainId[chainId];
-            const ddropContract = new thetajs.Contract(dDropAddress, TNT20ABI, null);
-            const ddropStakingContract = new thetajs.Contract(dDropStakingAddress, DDropStakingABI, null);
+            const ddropContract = new dnerojs.Contract(dDropAddress, DNC20ABI, null);
+            const ddropStakingContract = new dnerojs.Contract(dDropStakingAddress, DDropStakingABI, null);
             const assetsById = _.keyBy(assets, 'id');
             const dDropAsset = assetsById[dDropAddress];
-            const amountBN = toTNT20TokenSmallestUnit(amount, dDropAsset.decimals);
+            const amountBN = toDNC20TokenSmallestUnit(amount, dDropAsset.decimals);
             const approveTx = await ddropContract.populateTransaction.approve(dDropStakingAddress,amountBN.toString());
             const stakeTx = await ddropStakingContract.populateTransaction.stake(amountBN.toString());
             // We are sending the approve TX in the background which fails because the amount hasn't been approved yet...so we will hardcode this gas limit for now
@@ -337,7 +337,7 @@ export const formDataToTransaction = async (transactionType, txFormData, dneroWa
     else if(transactionType === 'delegate-ddrop-vote'){
         const {address} = txFormData;
         const dDropStakingAddress = DDropStakingAddressByChainId[chainId];
-        const ddropStakingContract = new thetajs.Contract(dDropStakingAddress, DDropStakingABI, null);
+        const ddropStakingContract = new dnerojs.Contract(dDropStakingAddress, DDropStakingABI, null);
         const delegateTx = await ddropStakingContract.populateTransaction.delegate(address);
 
         return delegateTx;
@@ -350,15 +350,15 @@ export const transactionTypeToName = (txType) => {
     }
 
     switch (txType) {
-        case thetajs.constants.TxType.Send:
+        case dnerojs.constants.TxType.Send:
             return 'Send';
-        case thetajs.constants.TxType.SmartContract:
+        case dnerojs.constants.TxType.SmartContract:
             return 'Call Contract';
-        case thetajs.constants.TxType.DepositStake:
+        case dnerojs.constants.TxType.DepositStake:
             return 'Deposit Stake';
-        case thetajs.constants.TxType.DepositStakeV2:
+        case dnerojs.constants.TxType.DepositStakeV2:
             return 'Deposit Stake';
-        case thetajs.constants.TxType.WithdrawStake:
+        case dnerojs.constants.TxType.WithdrawStake:
             return 'Withdraw Stake';
         default:
             return 'Unknown type';
@@ -370,13 +370,13 @@ export const transactionRequestToTransactionType = (transactionRequest) => {
     const txData = _.get(transactionRequest, 'txData');
 
     try {
-        if(txType === thetajs.constants.TxType.SmartContract && _.isNil(_.get(txData, 'to'))){
+        if(txType === dnerojs.constants.TxType.SmartContract && _.isNil(_.get(txData, 'to'))){
             return 'Deploy Contract';
         }
 
         const contractData = _.get(txData, 'data');
-        const tnt20Contract = new thetajs.Contract(null, TNT20ABI, null);
-        const data = tnt20Contract.interface.decodeFunctionData('transfer(address,uint256)',contractData);
+        const dnc20Contract = new dnerojs.Contract(null, DNC20ABI, null);
+        const data = dnc20Contract.interface.decodeFunctionData('transfer(address,uint256)',contractData);
         return 'Transfer Token';
     }
     catch (e) {
