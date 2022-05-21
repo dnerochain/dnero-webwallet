@@ -1,16 +1,16 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import * as thetajs from '@thetalabs/theta-js';
+import * as dnerojs from '@dnerolabs/dnero-js';
 import {hideModal, hideModals} from "../state/actions/ui";
 import {setNetwork} from "../state/actions/Wallet";
 
 const classNames = require('classnames');
 
 const OrderedNetworks = [
-    thetajs.networks.Mainnet,
-    thetajs.networks.Testnet,
-    thetajs.networks.Privatenet,
-    thetajs.networks.EliteEdgeTestnet,
+    dnerojs.networks.Mainnet,
+    dnerojs.networks.Testnet,
+    dnerojs.networks.Privatenet,
+    dnerojs.networks.EliteEdgeTestnet,
 ];
 
 export class NetworkSelectorModal extends React.Component {

@@ -10,8 +10,8 @@ const pathBase = 'm'
 const MAX_INDEX = 1000
 const DELAY_BETWEEN_POPUPS = 1000
 const TREZOR_CONNECT_MANIFEST = {
-    email: 'support@thetatoken.org',
-    appUrl: 'https://wallet.thetatoken.org',
+    email: 'support@dnerochain.org',
+    appUrl: 'https://wallet.dnerochain.org',
     keepSession: true
 };
 

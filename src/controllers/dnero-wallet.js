@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import * as thetajs from '@thetalabs/theta-js';
+import * as dnerojs from '@dnerolabs/dnero-js';
 import KeyringController from '../controllers/keyring';
 import ComposableObservableStore from '../utils/ComposableObservableStore';
 import PreferencesController from './preferences';
@@ -35,7 +35,7 @@ export default class DneroWalletController extends EventEmitter {
         });
         this.preferencesController.on('networkChanged', (newNetwork) => {
             const selectedAddress = this.preferencesController.getSelectedAddress();
-            const newProvider = new thetajs.providers.HttpProvider(newNetwork.chainId);
+            const newProvider = new dnerojs.providers.HttpProvider(newNetwork.chainId);
             this.setProvider(newProvider);
 
             if(selectedAddress) {
@@ -51,7 +51,7 @@ export default class DneroWalletController extends EventEmitter {
         });
 
         const network = this.preferencesController.getNetwork();
-        this.provider =  new thetajs.providers.HttpProvider(network.chainId);
+        this.provider =  new dnerojs.providers.HttpProvider(network.chainId);
 
         const additionalKeyrings = [TrezorKeyring, LedgerKeyring]
         this.keyringController = new KeyringController({
@@ -297,7 +297,7 @@ export default class DneroWalletController extends EventEmitter {
             privateKeyToImport = privateKey;
         }
         else if(encryptedJson && encryptedJsonPassword){
-            const wallet = thetajs.Wallet.fromEncryptedJson(encryptedJson, encryptedJsonPassword, null);
+            const wallet = dnerojs.Wallet.fromEncryptedJson(encryptedJson, encryptedJsonPassword, null);
             privateKeyToImport = wallet.privateKey;
         }
         else{
