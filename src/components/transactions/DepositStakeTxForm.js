@@ -2,7 +2,7 @@ import _ from 'lodash';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { ethers } from 'ethers';
-import * as thetajs from '@thetalabs/theta-js';
+import * as dnerojs from '@dnerolabs/dnero-js';
 import FormField from '../../components/FormField';
 import {
     formatNativeTokenAmountToLargestUnit,
@@ -16,35 +16,35 @@ import FlatButton from "../buttons/FlatButton";
 import BigNumber from "bignumber.js";
 
 export default function DepositStakeTxForm(props) {
-    const {onSubmit, defaultValues, formRef, selectedAccount, assets, chainId, onShowDelegatedGuardianNodes} = props;
+    const {onSubmit, defaultValues, formRef, selectedAccount, assets, chainId, onShowDelegatedSentryNodes} = props;
     const {register, handleSubmit, errors, watch, setValue} = useForm({
         mode: 'onChange',
         defaultValues: defaultValues || {
-            purpose: thetajs.constants.StakePurpose.StakeForGuardian,
+            purpose: dnerojs.constants.StakePurpose.StakeForSentry,
             holder: '',
             holderSummary: '',
             amount: '',
-            delegatedGuardianNode: null
+            delegatedSentryNode: null
         }
     });
     React.useEffect(() => {
-        register('delegatedGuardianNode');
+        register('delegatedSentryNode');
     }, [register]);
     const purpose = parseInt(watch('purpose'));
-    const delegatedGuardianNode = watch('delegatedGuardianNode');
+    const delegatedSentryNode = watch('delegatedSentryNode');
     let holderTitle = null;
     let holderPlaceholder = null;
     let stakeAmountTitle = null;
 
-    if (purpose === thetajs.constants.StakePurpose.StakeForValidator) {
+    if (purpose === dnerojs.constants.StakePurpose.StakeForValidator) {
         holderTitle = 'Validator Node Holder (Address)';
         holderPlaceholder = 'Enter validator node address';
         stakeAmountTitle = 'Dnero Stake Amount';
-    } else if (purpose === thetajs.constants.StakePurpose.StakeForGuardian) {
-        holderTitle = 'Guardian Node Holder (Summary)';
-        holderPlaceholder = 'Enter guardian node summary';
+    } else if (purpose === dnerojs.constants.StakePurpose.StakeForSentry) {
+        holderTitle = 'Sentry Node Holder (Summary)';
+        holderPlaceholder = 'Enter sentry node summary';
         stakeAmountTitle = 'Dnero Stake Amount';
-    } else if (purpose === thetajs.constants.StakePurpose.StakeForEliteEdge) {
+    } else if (purpose === dnerojs.constants.StakePurpose.StakeForEliteEdge) {
         holderTitle = 'Edge Node Holder (Summary)';
         holderPlaceholder = 'Enter edge node summary';
         stakeAmountTitle = 'DToken Stake Amount';
@@ -56,20 +56,20 @@ export default function DepositStakeTxForm(props) {
     const populateMaxAmount = () => {
         let amount = '';
         let max = getMaxStakeAmount(purpose);
-        if(purpose === thetajs.constants.StakePurpose.StakeForValidator || purpose === thetajs.constants.StakePurpose.StakeForGuardian){
+        if(purpose === dnerojs.constants.StakePurpose.StakeForValidator || purpose === dnerojs.constants.StakePurpose.StakeForSentry){
             amount = toNativeTokenLargestUnit(selectedAccount.balances['dnerowei']).toString(10);
 
-            if (purpose === thetajs.constants.StakePurpose.StakeForEliteEdge) {
+            if (purpose === dnerojs.constants.StakePurpose.StakeForEliteEdge) {
                 amount = Math.min(max, parseFloat(amount));
             } else if (
-                purpose === thetajs.constants.StakePurpose.StakeForGuardian ||
-                !_.isNil(delegatedGuardianNode)) {
+                purpose === dnerojs.constants.StakePurpose.StakeForSentry ||
+                !_.isNil(delegatedSentryNode)) {
                 max = getMaxDelegatedStakeAmount(purpose);
                 amount = Math.min(max, parseFloat(amount));
             }
         }
-        else if(purpose === thetajs.constants.StakePurpose.StakeForEliteEdge){
-            const maxDtokenBN = (new BigNumber(selectedAccount.balances['dtokenwei'])).minus(thetajs.constants.gasPriceDefault);
+        else if(purpose === dnerojs.constants.StakePurpose.StakeForEliteEdge){
+            const maxDtokenBN = (new BigNumber(selectedAccount.balances['dtokenwei'])).minus(dnerojs.constants.gasPriceDefault);
             amount = toNativeTokenLargestUnit(maxDtokenBN.toString(10)).toString(10);
 
             amount = Math.min(max, parseFloat(amount));
@@ -100,16 +100,16 @@ export default function DepositStakeTxForm(props) {
                             disabled>
                         Select stake type
                     </option>
-                    <option key={'guardian'}
-                            value={thetajs.constants.StakePurpose.StakeForGuardian}>
-                        Guardian Node
+                    <option key={'sentry'}
+                            value={dnerojs.constants.StakePurpose.StakeForSentry}>
+                        Sentry Node
                     </option>
                     <option key={'validator'}
-                            value={thetajs.constants.StakePurpose.StakeForValidator}>
+                            value={dnerojs.constants.StakePurpose.StakeForValidator}>
                         Validator Node
                     </option>
                     <option key={'elite-edge'}
-                            value={thetajs.constants.StakePurpose.StakeForEliteEdge}>
+                            value={dnerojs.constants.StakePurpose.StakeForEliteEdge}>
                         Edge Node
                     </option>
                     {
@@ -123,7 +123,7 @@ export default function DepositStakeTxForm(props) {
             </FormField>
 
             {
-                (purpose === thetajs.constants.StakePurpose.StakeForValidator) &&
+                (purpose === dnerojs.constants.StakePurpose.StakeForValidator) &&
                 <FormField title={holderTitle}
                            error={errors.holder && 'A valid validator address is required'}
                 >
@@ -138,43 +138,43 @@ export default function DepositStakeTxForm(props) {
             }
 
             {
-                (purpose === thetajs.constants.StakePurpose.StakeForGuardian) &&
-                <FormField title={(delegatedGuardianNode ? 'Delegated Guardian Node' : holderTitle)}
-                           error={errors.holderSummary && 'Guardian node summary or delegated guardian node is required'}
+                (purpose === dnerojs.constants.StakePurpose.StakeForSentry) &&
+                <FormField title={(delegatedSentryNode ? 'Delegated Sentry Node' : holderTitle)}
+                           error={errors.holderSummary && 'Sentry node summary or delegated sentry node is required'}
                 >
                     <React.Fragment>
                         <textarea name="holderSummary"
                           className={'RoundedInput'}
-                          style={{height: 100, display: (delegatedGuardianNode ? 'none' : 'block')}}
+                          style={{height: 100, display: (delegatedSentryNode ? 'none' : 'block')}}
                           placeholder={holderPlaceholder}
                           ref={register({
                               required: true,
                               validate: (s) => isHolderSummary(s)
                           })}/>
                         {
-                            _.isNil(delegatedGuardianNode) &&
+                            _.isNil(delegatedSentryNode) &&
                             <a onClick={() => {
-                                onShowDelegatedGuardianNodes((node) => {
+                                onShowDelegatedSentryNodes((node) => {
                                     setValue('holderSummary', node.node_summary);
-                                    setValue('delegatedGuardianNode', node);
+                                    setValue('delegatedSentryNode', node);
                                 });
                             }}
                                className={'Link'}
                                style={{marginTop: 8, textAlign: 'left'}}
                             >
-                                Select Delegated Guardian Node
+                                Select Delegated Sentry Node
                             </a>
                         }
                     </React.Fragment>
                     {
-                        !_.isNil(delegatedGuardianNode) &&
+                        !_.isNil(delegatedSentryNode) &&
                         <React.Fragment>
                             <div className={'RoundedInput'}>
                                 <div className={'RoundedInputClearableValue'}>
-                                    <div>{delegatedGuardianNode.name}</div>
+                                    <div>{delegatedSentryNode.name}</div>
                                     <a onClick={() => {
                                         setValue('holderSummary', null);
-                                        setValue('delegatedGuardianNode', null);
+                                        setValue('delegatedSentryNode', null);
                                     }}
                                        style={{marginLeft: 'auto'}}
                                     >
@@ -189,7 +189,7 @@ export default function DepositStakeTxForm(props) {
 
 
             {
-                (purpose === thetajs.constants.StakePurpose.StakeForEliteEdge) &&
+                (purpose === dnerojs.constants.StakePurpose.StakeForEliteEdge) &&
                 <FormField title={holderTitle}
                            error={errors.holderSummary && 'Edge node summary is required'}
                 >
@@ -199,7 +199,7 @@ export default function DepositStakeTxForm(props) {
                     placeholder={holderPlaceholder}
                     ref={register({
                         required: true,
-                        validate: (s) => thetajs.transactions.DepositStakeV2Transaction.isValidHolderSummary(purpose, s)
+                        validate: (s) => dnerojs.transactions.DepositStakeV2Transaction.isValidHolderSummary(purpose, s)
                     })}/>
                 </FormField>
             }
@@ -219,11 +219,11 @@ export default function DepositStakeTxForm(props) {
                            validate: {
                                sufficientBalance: (s) => {
                                    let isValid = true;
-                                   if (purpose === thetajs.constants.StakePurpose.StakeForEliteEdge) {
+                                   if (purpose === dnerojs.constants.StakePurpose.StakeForEliteEdge) {
                                        isValid = isValidAmount(selectedAccount, DTokenAsset, s);
                                    } else if (
-                                       purpose === thetajs.constants.StakePurpose.StakeForGuardian ||
-                                       purpose === thetajs.constants.StakePurpose.StakeForValidator) {
+                                       purpose === dnerojs.constants.StakePurpose.StakeForSentry ||
+                                       purpose === dnerojs.constants.StakePurpose.StakeForValidator) {
                                        isValid = isValidAmount(selectedAccount, DneroAsset, s);
                                    } else if (purpose === StakePurposeForDDROP) {
                                        const dDropAsset = DDropAsset(chainId);
@@ -236,13 +236,13 @@ export default function DepositStakeTxForm(props) {
                                moreThanMin: (s) => {
                                    const f = parseFloat(s);
                                    const min = getMinStakeAmount(purpose);
-                                   if (purpose === thetajs.constants.StakePurpose.StakeForEliteEdge) {
+                                   if (purpose === dnerojs.constants.StakePurpose.StakeForEliteEdge) {
                                        if(min > f){
                                            return `Invalid amount. Must be at least ${numberWithCommas(min)} DTOKEN`;
                                        }
                                    } else if (
-                                       purpose === thetajs.constants.StakePurpose.StakeForGuardian ||
-                                       purpose === thetajs.constants.StakePurpose.StakeForValidator) {
+                                       purpose === dnerojs.constants.StakePurpose.StakeForSentry ||
+                                       purpose === dnerojs.constants.StakePurpose.StakeForValidator) {
                                        if(min > f){
                                            return `Invalid amount. Must be at least ${numberWithCommas(min)} DNERO`;
                                        }
@@ -252,16 +252,16 @@ export default function DepositStakeTxForm(props) {
                                lessThanMax: (s) => {
                                    const f = parseFloat(s);
                                    let max = getMaxStakeAmount(purpose);
-                                   if (purpose === thetajs.constants.StakePurpose.StakeForEliteEdge) {
+                                   if (purpose === dnerojs.constants.StakePurpose.StakeForEliteEdge) {
                                        if(max < f){
                                            return `Invalid amount. Must be less than ${numberWithCommas(max)} DTOKEN`;
                                        }
                                    } else if (
-                                       purpose === thetajs.constants.StakePurpose.StakeForGuardian ||
-                                       !_.isNil(delegatedGuardianNode)) {
+                                       purpose === dnerojs.constants.StakePurpose.StakeForSentry ||
+                                       !_.isNil(delegatedSentryNode)) {
                                        max = getMaxDelegatedStakeAmount(purpose);
                                        if(max < f){
-                                           return `Invalid amount. There's a max of ${numberWithCommas(max)} DNERO for delegated nodes. Please download and run your own Guardian Node to stake more.`;
+                                           return `Invalid amount. There's a max of ${numberWithCommas(max)} DNERO for delegated nodes. Please download and run your own Sentry Node to stake more.`;
                                        }
                                    }
                                    return true;

@@ -1,15 +1,15 @@
 import _ from 'lodash';
-import * as thetajs from '@thetalabs/theta-js';
+import * as dnerojs from '@dnerolabs/dnero-js';
 import {DDropAddressByChainId} from './index';
 
-const {tokensByChainId} = require('@thetalabs/tnt20-contract-metadata');
+const {tokensByChainId} = require('@dnerolabs/dnc20-contract-metadata');
 
 const getTokenIconUrl = (fileName) => {
     if(_.isEmpty(fileName)){
         return null;
     }
-    return `https://s3.us-east-2.amazonaws.com/assets.thetatoken.org/tokens/${fileName}`;
-    // return `https://assets.thetatoken.org/tokens/${fileName}`;
+    return `https://s3.us-east-2.amazonaws.com/assets.dnerochain.org/tokens/${fileName}`;
+    // return `https://assets.dnerochain.org/tokens/${fileName}`;
 };
 
 const DneroAsset = {
@@ -39,10 +39,10 @@ const NativeAssets = [
 
 const DDropAsset = (chainId) => {
     const ddropAddress = DDropAddressByChainId[chainId];
-    let TNT20Asset = null;
+    let DNC20Asset = null;
 
     if(ddropAddress){
-        TNT20Asset = {
+        DNC20Asset = {
             id: ddropAddress,
             name: 'DDROP',
             symbol: 'DDROP',
@@ -54,19 +54,19 @@ const DDropAsset = (chainId) => {
         };
     }
 
-    return TNT20Asset;
+    return DNC20Asset;
 };
 
 const DefaultAssets = (chainId) => {
     const ddropAddress = DDropAddressByChainId[chainId];
-    let TNT20Assets = [];
+    let DNC20Assets = [];
     let ddropAsset = DDropAsset(chainId);
 
     if(ddropAddress){
-        TNT20Assets.push(ddropAsset);
+        DNC20Assets.push(ddropAsset);
     }
 
-    return _.concat(NativeAssets, TNT20Assets);
+    return _.concat(NativeAssets, DNC20Assets);
 };
 
 const getAllAssets = (chainId, tokens) => {
@@ -80,7 +80,7 @@ const getAllAssets = (chainId, tokens) => {
 };
 
 const tokenToAsset = (token) => {
-    const knownToken = (tokensByChainId[thetajs.networks.ChainIds.Mainnet][token.address] || tokensByChainId[thetajs.networks.ChainIds.Testnet][token.address]);
+    const knownToken = (tokensByChainId[dnerojs.networks.ChainIds.Mainnet][token.address] || tokensByChainId[dnerojs.networks.ChainIds.Testnet][token.address]);
 
     return {
         id: token.address,

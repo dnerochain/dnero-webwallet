@@ -1,10 +1,10 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { ethers } from 'ethers';
-import * as thetajs from '@thetalabs/theta-js';
+import * as dnerojs from '@dnerolabs/dnero-js';
 import FormField from '../FormField';
 import {StakePurposeForDDROP} from '../../constants';
-import {formatTNT20TokenAmountToLargestUnit} from '../../utils/Utils';
+import {formatDNC20TokenAmountToLargestUnit} from '../../utils/Utils';
 import _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import {DDropAsset} from '../../constants/assets';
@@ -14,7 +14,7 @@ export default function WithdrawStakeTxForm(props){
     const {register, handleSubmit, errors, watch, setValue} = useForm({
         mode: 'onChange',
         defaultValues: defaultValues || {
-            purpose: thetajs.constants.StakePurpose.StakeForGuardian,
+            purpose: dnerojs.constants.StakePurpose.StakeForSentry,
             holder: '',
             amount: ''
         }
@@ -25,11 +25,11 @@ export default function WithdrawStakeTxForm(props){
 
     const renderEstDDROPToReturn = () => {
         const percentageToUnstake = Math.min(parseFloat(amount), 100.0) / 100;
-        const tnt20stakes = _.get(selectedAccount, ['tnt20Stakes'], {});
-        const balanceStr = _.get(tnt20stakes, 'ddrop.estimatedTokenOwnedWithRewards', '0');
+        const dnc20stakes = _.get(selectedAccount, ['dnc20Stakes'], {});
+        const balanceStr = _.get(dnc20stakes, 'ddrop.estimatedTokenOwnedWithRewards', '0');
         const balanceBN = new BigNumber(balanceStr);
         const amountBN = balanceBN.multipliedBy(percentageToUnstake);
-        const formattedAmt = formatTNT20TokenAmountToLargestUnit(amountBN.toString(), DDropAsset(chainId).decimals);
+        const formattedAmt = formatDNC20TokenAmountToLargestUnit(amountBN.toString(), DDropAsset(chainId).decimals);
 
         return (
             <div>
@@ -56,16 +56,16 @@ export default function WithdrawStakeTxForm(props){
                             disabled>
                         Select stake type
                     </option>
-                    <option key={'guardian'}
-                            value={thetajs.constants.StakePurpose.StakeForGuardian}>
-                        Guardian Node
+                    <option key={'sentry'}
+                            value={dnerojs.constants.StakePurpose.StakeForSentry}>
+                        Sentry Node
                     </option>
                     <option key={'validator'}
-                            value={thetajs.constants.StakePurpose.StakeForValidator}>
+                            value={dnerojs.constants.StakePurpose.StakeForValidator}>
                         Validator Node
                     </option>
                     <option key={'validator'}
-                            value={thetajs.constants.StakePurpose.StakeForEliteEdge}>
+                            value={dnerojs.constants.StakePurpose.StakeForEliteEdge}>
                         Edge Node
                     </option>
                     {
