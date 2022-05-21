@@ -1,6 +1,6 @@
 ## Dnero Wallet for Web
 
-Reference implementation of the Dnero Web Wallet. In addition to the standard wallet functionalities like sending and receiving Dnero/DToken, it also allows the user to deploy and interact with smart contracts running on the Dnero blockchain. To see the Dnero Web Wallet in action, please visit [https://wallet.thetatoken.org/](https://wallet.thetatoken.org/).
+Reference implementation of the Dnero Web Wallet. In addition to the standard wallet functionalities like sending and receiving Dnero/DToken, it also allows the user to deploy and interact with smart contracts running on the Dnero blockchain. To see the Dnero Web Wallet in action, please visit [https://wallet.dnerochain.org/](https://wallet.dnerochain.org/).
 
 ### Setup
 
