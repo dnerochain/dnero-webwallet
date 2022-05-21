@@ -31,7 +31,7 @@ export const NetworksWithDescriptions = [
     {
         id: Networks.DNERO_TESTNET_SAPPHIRE,
         name: "Testnet (Sapphire)",
-        description: "DNERO testnet for guardian nodes (Feb 2020)",
+        description: "DNERO testnet for sentry nodes (Feb 2020)",
         // faucetId: "sapphire"
     },
     {
@@ -45,13 +45,13 @@ export const NetworksWithDescriptions = [
 export const NetworksById = zipMap(NetworksWithDescriptions.map(({ id }) => id), NetworksWithDescriptions);
 
 export const NetworkExplorerUrls = {
-    //[Networks.DNERO_MAINNET]: 'https://explorer.thetatoken.org',
+//    [Networks.DNERO_MAINNET]: 'https://explorer.dnerochain.org',
 	[Networks.DNERO_MAINNET]: 'http://164.92.81.239:5445/',
-	//
-//    [Networks.DNERO_TESTNET]: 'https://beta-explorer.thetatoken.org',
-//    [Networks.DNERO_TESTNET_AMBER]: 'https://elite-edge-testnet-explorer.thetatoken.org',
-//    [Networks.DNERO_TESTNET_SAPPHIRE]: 'https://guardian-testnet-explorer.thetatoken.org',
-//    [Networks.DNERO_PRIVATENET]: 'https://smart-contracts-sandbox-explorer.thetatoken.org'
+//
+//    [Networks.DNERO_TESTNET]: 'https://beta-explorer.dnerochain.org',
+//    [Networks.DNERO_TESTNET_AMBER]: 'https://elite-edge-testnet-explorer.dnerochain.org',
+//    [Networks.DNERO_TESTNET_SAPPHIRE]: 'https://sentry-testnet-explorer.dnerochain.org',
+//    [Networks.DNERO_PRIVATENET]: 'https://smart-contracts-sandbox-explorer.dnerochain.org'
 };
 
 export function isEthereumNetwork(network) {
@@ -67,7 +67,7 @@ export function canEdgeNodeStake(network) {
     return (network === Networks.DNERO_TESTNET_AMBER);
 }
 
-export function canGuardianNodeStake(network) {
+export function canSentryNodeStake(network) {
     return true;
 }
 

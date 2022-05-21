@@ -39,7 +39,7 @@ export class CreateTransactionModal extends React.Component {
         this.props.dispatch(createTransactionRequest(transactionRequest));
     };
 
-    onShowDelegatedGuardianNodes = (onSelectNode) => {
+    onShowDelegatedSentryNodes = (onSelectNode) => {
         this.props.dispatch(showModal({
             type: ModalTypes.DELEGATED_NODE_SELECTOR,
             props: {
@@ -76,7 +76,7 @@ export class CreateTransactionModal extends React.Component {
                                         assets={assets}
                                         chainId={chainId}
                                         onSubmit={this.onSubmit}
-                                        onShowDelegatedGuardianNodes={this.onShowDelegatedGuardianNodes}
+                                        onShowDelegatedSentryNodes={this.onShowDelegatedSentryNodes}
                     />
                 }
                 {

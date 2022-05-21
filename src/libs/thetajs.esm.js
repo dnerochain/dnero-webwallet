@@ -358,7 +358,7 @@ class SendTx extends Tx{
 
 const StakePurposes = {
     StakeForValidator: 0,
-    StakeForGuardian: 1,
+    StakeForSentry: 1,
     StakeForEliteEdge: 2
 };
 
@@ -443,7 +443,7 @@ class DepositStakeV2Tx extends StakeTx{
                 summary = "0x" + holderSummary;
             }
 
-            let expectedLen = 460; // Guardian Nodes
+            let expectedLen = 460; // Sentry Nodes
             if(purpose === StakePurposes.StakeForEliteEdge){
                 expectedLen = 524;
             }
@@ -485,7 +485,7 @@ class DepositStakeV2Tx extends StakeTx{
             console.log("Holder must be a valid node summary");
         }
 
-        //let guardianKeyBytes = Bytes.fromString(holderSummary);
+        //let sentryKeyBytes = Bytes.fromString(holderSummary);
         let nodeKeyBytes = Bytes.toArray(holderSummary);
 
         //slice instead of subarray

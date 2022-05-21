@@ -10,7 +10,7 @@ function stakeTypeToNodeType(stakeType){
         return 'Validator';
     }
     else if(stakeType === 'gcp'){
-        return 'Guardian';
+        return 'Sentry';
     }
     else if(stakeType === 'eenp'){
         return 'Elite Edge';

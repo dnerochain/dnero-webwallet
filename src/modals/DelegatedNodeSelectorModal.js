@@ -15,7 +15,7 @@ export class DelegatedNodeSelectorModal extends React.Component {
     };
 
     render() {
-        const {delegatedGuardianNodes} = this.props;
+        const {delegatedSentryNodes} = this.props;
 
         return (
             <div className={'DelegatedNodeSelectorModal'}>
@@ -24,11 +24,11 @@ export class DelegatedNodeSelectorModal extends React.Component {
                 </div>
                 <div className='DelegatedNodeSelectorModal__content'>
                     <div className='DelegatedNodeSelectorModal__message'>
-                        Delegated staking Guardian Nodes are nodes run by Dnero community volunteers. Uptime of these nodes is not guaranteed, and you may not receive full DTOKEN rewards if the node you delegate to has significant downtime.
+                        Delegated staking Sentry Nodes are nodes run by Dnero community volunteers. Uptime of these nodes is not guaranteed, and you may not receive full DTOKEN rewards if the node you delegate to has significant downtime.
                     </div>
                     <div className='DelegatedNodeList'>
                         {
-                            delegatedGuardianNodes.map((node) => {
+                            delegatedSentryNodes.map((node) => {
                                 return (
                                     <div key={node.address}
                                          className={'DelegatedNodeListItem'}
@@ -54,10 +54,10 @@ export class DelegatedNodeSelectorModal extends React.Component {
 
 const mapStateToProps = (state, props) => {
     const { dneroWallet } = state;
-    const delegatedGuardianNodes = dneroWallet.delegatedGuardianNodes;
+    const delegatedSentryNodes = dneroWallet.delegatedSentryNodes;
 
     return {
-        delegatedGuardianNodes: delegatedGuardianNodes,
+        delegatedSentryNodes: delegatedSentryNodes,
 
         onSelectNode: props.onSelectNode
     };
