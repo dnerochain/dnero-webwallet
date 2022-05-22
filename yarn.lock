@@ -1499,7 +1499,7 @@
 
 "@dnerolabs/dnero-js@^0.0.67":
   version "0.0.67"
-  resolved "git://github.com/muroko/dnero-js.git"
+  resolved "https://github.com/muroko/dnero-js"
   dependencies:
     "@ethersproject/bignumber" "^5.0.9"
     "@ethersproject/bytes" "^5.0.11"
@@ -1513,7 +1513,7 @@
 
 "@dnerolabs/dnc20-contract-metadata@^1.0.2":
   version "1.0.2"
-  resolved "git://github.com/muroko/dnc20-contract-metadata.git"
+  resolved "https://github.com/muroko/dnc20-contract-metadata"
 
 "@types/babel__core@^7.1.0":
   version "7.1.5"
