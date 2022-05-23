@@ -9,7 +9,7 @@ export default {
     WITHDRAW_STAKE_CONFIRMATION: 'withdraw-stake-confirmation',
     SMART_CONTRACT_CONFIRMATION: 'smart-contract-confrimation',
     NETWORK_SELECTOR: 'network-selector',
-    GUARDIAN_NODE_DELEGATE_SELECTOR: 'sentry-node-delegate-selector',
+    SENTRY_NODE_DELEGATE_SELECTOR: 'sentry-node-delegate-selector',
 
     CONFIRM_TRANSACTION: 'confirm-transaction',
     CREATE_TRANSACTION: 'create-transaction',
