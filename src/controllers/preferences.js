@@ -417,7 +417,8 @@ export default class PreferencesController  extends EventEmitter {
         let delegatedSentryNodes = null;
 
         try {
-            const url = `https://api.dnerochain.org/v1/sentry/delegated-nodes`;
+            //const url = `https://api.dnerochain.org/v1/sentry/delegated-nodes`;
+            const url = `http://143.198.132.249:7554/api/v1/sentry/delegated-nodes`;
             const response = await fetch(url);
             const responseJson = await response.json();
             delegatedSentryNodes = responseJson;
