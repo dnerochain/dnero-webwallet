@@ -1,6 +1,6 @@
 //
 //const BASE_URL = "https://api-wallet.dnerochain.org";
-const BASE_URL = "http://164.92.98.151:3000/api/"; //Actual Dnero Web-Wallet IP
+const BASE_URL = "http://143.198.132.249:7554/api"; //WebWallet_DEDICATED_ETH-RPC_API
 
 const DEFAULT_HEADERS = {
     'Accept': 'application/json',
@@ -179,7 +179,7 @@ export default class Api {
 
     static fetchSentryNodeDelegates() {
         //let url = `https://api.dnerochain.org/v1/sentry/delegated-nodes`;
-        let url = `http://143.198.111.119:7554/api/v1/sentry/delegated-nodes`;
+        let url = `http://143.198.132.249:7554/api/v1/sentry/delegated-nodes`;
 
         return sendRequest(url, "GET", null, null);
     }
