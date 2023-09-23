@@ -28,13 +28,13 @@ export const FaucetAvailable = false;
 
 export function getMinStakeAmount(purpose){
     if(purpose === dnerojs.constants.StakePurpose.StakeForValidator){
-        return 200000.0;
+        return 2000000.0;
     }
     else if(purpose === dnerojs.constants.StakePurpose.StakeForSentry){
-        return 1000.0;
+        return 2000.0;
     }
     else if(purpose === dnerojs.constants.StakePurpose.StakeForEliteEdge){
-        return 10000.0;
+        return 20000.0;
     }
 
     //Unknown
