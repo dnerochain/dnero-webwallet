@@ -45,7 +45,7 @@ export const NetworksWithDescriptions = [
 export const NetworksById = zipMap(NetworksWithDescriptions.map(({ id }) => id), NetworksWithDescriptions);
 
 export const NetworkExplorerUrls = {
-//    [Networks.DNERO_MAINNET]: 'https://explorer.dnerochain.org',
+//    [Networks.DNERO_MAINNET]: 'https://explorer.dnerochain.xyz',
 	  [Networks.DNERO_MAINNET]: 'http://164.92.81.239:5445',
 //
 //    [Networks.DNERO_TESTNET]: 'https://beta-explorer.dnerochain.org',
