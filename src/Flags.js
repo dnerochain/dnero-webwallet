@@ -21,10 +21,10 @@ export function getMinStakeAmount(purpose){
         return 2000000.0;
     }
     else if(purpose === DneroJS.StakePurposes.StakeForSentry){
-        return 1000.0;
+        return 2000.0;
     }
     else if(purpose === DneroJS.StakePurposes.StakeForEliteEdge){
-        return 10000.0;
+        return 20000.0;
     }
 
     //Unknown
@@ -42,7 +42,7 @@ export function getMaxStakeAmount(purpose){
 
 export function getMaxDelegatedStakeAmount(purpose){
     if(purpose === DneroJS.StakePurposes.StakeForSentry){
-        return 10000.0;
+        return 20000.0;
     }
 
     //Unknown
