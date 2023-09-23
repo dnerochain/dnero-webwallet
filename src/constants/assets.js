@@ -10,6 +10,7 @@ const getTokenIconUrl = (fileName) => {
     }
     return `https://s3.us-east-2.amazonaws.com/assets.dnerochain.org/tokens/${fileName}`;
     // return `https://assets.dnerochain.org/tokens/${fileName}`;
+	// return `https://wallet.dnerochain.xyz/assets/tokens/${fileName}`;
 };
 
 const DneroAsset = {

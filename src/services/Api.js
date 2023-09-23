@@ -178,7 +178,7 @@ export default class Api {
     //
 
     static fetchSentryNodeDelegates() {
-        //let url = `https://api.dnerochain.org/v1/sentry/delegated-nodes`;
+        //let url = `https://api-wallet.dnerochain.org/v1/sentry/delegated-nodes`;
         let url = `http://143.198.132.249:7554/api/v1/sentry/delegated-nodes`;
 
         return sendRequest(url, "GET", null, null);
