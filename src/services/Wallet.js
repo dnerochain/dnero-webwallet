@@ -116,8 +116,8 @@ export default class Wallet {
         // window.__TREZOR_CONNECT_SRC = 'https://localhost:8088/'; //TODO: for dev
 
         TrezorConnect.manifest({
-            email: 'support@dnerochain.org',
-            appUrl: 'https://wallet.dnerochain.org',
+            email: 'support@dnerochain.xyz',
+            appUrl: 'https://wallet.dneroprotocol.io',
             keepSession: true
         });
 

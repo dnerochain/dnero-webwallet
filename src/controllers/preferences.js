@@ -1,8 +1,13 @@
 import _ from 'lodash';
 import ObservableStore from '../utils/ObservableStore';
 import * as dnerojs from '@dnerolabs/dnero-js';
+import {DNC721ABI} from "../constants/contracts";
+import {ERC721} from '../constants/assets';
 
 const { EventEmitter } = require('events');
+
+const ALL_COLLECTIBLES_STATE_KEY = 'allCollectibles';
+const ALL_COLLECTIBLES_CONTRACTS_STATE_KEY = 'allCollectibleContracts';
 
 export default class PreferencesController  extends EventEmitter {
     /**
@@ -24,6 +29,10 @@ export default class PreferencesController  extends EventEmitter {
             assetImages: {},
             tokens: [],
 
+            // address -> chainId
+            allCollectibleContracts: {},
+            allCollectibles: {},
+
             identities: {},
             lostIdentities: {},
 
@@ -43,7 +52,12 @@ export default class PreferencesController  extends EventEmitter {
             ...opts.initState,
         };
 
+        this._getProvider = opts.getProvider;
+
         this.store = new ObservableStore(initState);
+
+        this.onCollectibleAdded = opts.onCollectibleAdded;
+        this.onCollectibleRemoved = opts.onCollectibleRemoved;
 
         this.updateDelegatedSentryNodes();
     }
@@ -255,16 +269,25 @@ export default class PreferencesController  extends EventEmitter {
      * Updates `accountTokens` and `tokens` of current account and network according to it.
      *
      * @param {Array} tokens - Array of tokens to be updated.
+     * @param {Array} assetImages - Array of token images to be updated.
+     * @param {String} [chainId] - (Optional) chainId to update
      *
      */
-    _updateAccountTokens(tokens, assetImages) {
+    _updateAccountTokens(tokens, assetImages, chainId) {
         const {
             accountTokens,
             network,
             selectedAddress,
         } = this._getTokenRelatedStates();
-        accountTokens[selectedAddress][network.chainId] = tokens;
-        this.store.updateState({ accountTokens, tokens, assetImages });
+        const chainIdToUpdate = (chainId || network.chainId);
+        accountTokens[selectedAddress][chainIdToUpdate] = tokens;
+        if(chainId){
+            // Don't update the tokens because it may not be the selected chainId
+            this.store.updateState({ accountTokens, assetImages });
+        }
+        else{
+            this.store.updateState({ accountTokens, tokens, assetImages });
+        }
 
         this.emit('accountTokensUpdated');
     }
@@ -278,14 +301,21 @@ export default class PreferencesController  extends EventEmitter {
      * @param {string} symbol - The symbol of the token
      * @param {number} decimals - The number of decimals the token uses.
      * @param {string} image - The url for the token asset.
+     * @param {string} [chainId] - The chainId to add the token to
      * @returns {Promise<array>} Promises the new array of AddedToken objects.
      *
      */
-    async addToken(rawAddress, symbol, decimals, image) {
+    async addToken(rawAddress, symbol, decimals, image, chainId) {
         const address = rawAddress;
         const newEntry = { address, symbol, decimals };
-        const { tokens } = this.store.getState();
+        let { tokens } = this.store.getState();
+        const { accountTokens, selectedAddress,} = this._getTokenRelatedStates();
         const assetImages = this.getAssetImages();
+
+        if(!_.isNil(chainId)){
+            // We need to grab the chainId's tokens instead of the currently selected chain
+            tokens = accountTokens[selectedAddress][chainId];
+        }
         const previousEntry = tokens.find((token) => {
             return token.address === address;
         });
@@ -297,7 +327,8 @@ export default class PreferencesController  extends EventEmitter {
             tokens.push(newEntry);
         }
         assetImages[address] = image;
-        this._updateAccountTokens(tokens, assetImages);
+
+        this._updateAccountTokens(tokens, assetImages, chainId);
         return Promise.resolve(tokens);
     }
 
@@ -325,6 +356,570 @@ export default class PreferencesController  extends EventEmitter {
      */
     getTokens() {
         return this.store.getState().tokens;
+    }
+
+    /**
+     * Helper method to update nested state for allCollectibles and allCollectibleContracts.
+     *
+     * @param newCollection - the modified piece of state to update in the controller's store
+     * @param baseStateKey - The root key in the store to update.
+     */
+    updateNestedCollectibleState(newCollection, baseStateKey) {
+        const {
+            network,
+            selectedAddress,
+        } = this._getTokenRelatedStates();
+        const chainId = network.chainId;
+        const userAddress = selectedAddress;
+        const { [baseStateKey]: oldState } = this.store.getState();
+
+        const addressState = oldState[userAddress];
+        const newAddressState = {
+            ...addressState,
+            ...{ [chainId]: newCollection },
+        };
+        const newState = {
+            ...oldState,
+            ...{ [userAddress]: newAddressState },
+        };
+
+        this.store.updateState({
+            [baseStateKey]: newState,
+        });
+    }
+
+    /**
+     * A getter for `tokens` and `accountTokens` related states.
+     *
+     * @param {string} [selectedAddress] - A new hex address for an account
+     * @returns {Object.<array, object, string, string>} States to interact with tokens in `accountTokens`
+     *
+     */
+    _getCollectibleRelatedStates(selectedAddress) {
+        let { network, allCollectibles, allCollectibleContracts } = this.store.getState();
+        const chainId = network.chainId;
+
+        if (!selectedAddress) {
+            // eslint-disable-next-line no-param-reassign
+            selectedAddress = this.store.getState().selectedAddress;
+        }
+        if (!(selectedAddress in allCollectibles)) {
+            allCollectibles[selectedAddress] = {};
+            allCollectibleContracts[selectedAddress] = {};
+        }
+        if (!(chainId in allCollectibles[selectedAddress])) {
+            allCollectibles[selectedAddress][chainId] = [];
+            allCollectibleContracts[selectedAddress][chainId] = [];
+        }
+
+        const collectibleContracts = allCollectibleContracts[selectedAddress][chainId];
+        const collectibles = allCollectibles[selectedAddress][chainId];
+
+        return { collectibleContracts, collectibles, network, selectedAddress };
+    }
+
+    /**
+     * Updates `tokens` of current account and network.
+     *
+     * @param {string} selectedAddress - Account address to be updated with.
+     *
+     */
+    _updateCollectibles(selectedAddress) {
+        const { collectibles, collectibleContracts } = this._getCollectibleRelatedStates(selectedAddress);
+        this.store.updateState({ collectibles, collectibleContracts });
+    }
+
+    /**
+     * Query for tokenURI for a given asset.
+     *
+     * @param address - ERC721 asset contract address.
+     * @param tokenId - ERC721 asset identifier.
+     * @returns Promise resolving to the 'owner'.
+     */
+    async getERC721OwnerOf(address, tokenId) {
+        const provider = this._getProvider();
+        let owner = null;
+
+        try {
+            const contract = new dnerojs.Contract(address, DNC721ABI, provider);
+            owner = await contract.ownerOf(tokenId);
+        }
+        catch (e){
+            owner = null;
+        }
+
+        return owner;
+    }
+
+    /**
+     * Checks the ownership of a ERC-721 or ERC-1155 collectible for a given address.
+     *
+     * @param ownerAddress - User public address.
+     * @param collectibleAddress - Collectible contract address.
+     * @param collectibleId - Collectible token ID.
+     * @returns Promise resolving the collectible ownership.
+     */
+    async isCollectibleOwner(ownerAddress, collectibleAddress, collectibleId) {
+        // Checks the ownership for ERC-721.
+        try {
+            const owner = await this.getERC721OwnerOf(
+                collectibleAddress,
+                collectibleId,
+            );
+            console.log('owner == ');
+            console.log(owner);
+            console.log('ownerAddress.toLowerCase() == ');
+            console.log(ownerAddress.toLowerCase());
+            return !_.isNil(owner) && (ownerAddress.toLowerCase() === owner.toLowerCase());
+            // eslint-disable-next-line no-empty
+        } catch {
+            // Ignore ERC-721 contract error
+        }
+
+        // TODO Check the ownership for ERC-1155.
+
+        throw new Error(
+            'Unable to verify ownership. Probably because the standard is not supported or the chain is incorrect.',
+        );
+    }
+
+    async getCollectibleContractInformationFromContract(contractAddress) {
+        const provider = this._getProvider();
+        try {
+            const contract = new dnerojs.Contract(contractAddress, DNC721ABI, provider);
+            const contractURI = await contract.contractURI();
+            const response = await fetch(contractURI);
+            const {name, image, external_url} = await response.json();
+
+            return {
+                address: contractAddress,
+                name: name,
+                image: image,
+                asset_contract_type: ERC721,
+                external_link: external_url,
+                collection: { name: name, image_url: image },
+            };
+        }
+        catch (e){
+            // Fall back if query fails.
+            return {
+                address: contractAddress,
+                name: null,
+                image: null,
+                asset_contract_type: null,
+                description: null,
+                external_link: null,
+                collection: { name: null, description: null, image_url: null },
+            };
+        }
+
+    }
+
+    /**
+     * Adds a new token to the token array, or updates the token if passed an address that already exists.
+     * Modifies the existing tokens array from the store. All objects in the tokens array array AddedToken objects.
+     * @see AddedCollectibleContract {@link AddedToken}
+     *
+     * @param {string} rawAddress - Hex address of the token contract. May or may not be a checksum address.
+     * @returns {Promise<array>} Promises the new array of AddedToken objects.
+     *
+     */
+    async addCollectibleContract(rawAddress) {
+        const address = rawAddress;
+        const contractInformation = await this.getCollectibleContractInformationFromContract(address);
+        const {asset_contract_type, name, image, external_link} = contractInformation;
+        const newEntry = Object.assign(
+            {},
+            { address },
+            name && { name },
+            image && { image: image },
+            asset_contract_type && { assetContractType: asset_contract_type },
+            external_link && { externalLink: external_link }
+        );
+        const { collectibleContracts } = this._getCollectibleRelatedStates();
+        const previousEntry = collectibleContracts.find((collectibleContract) => {
+            return collectibleContract.address.toLowerCase() === address.toLowerCase();
+        });
+        const previousIndex = collectibleContracts.indexOf(previousEntry);
+
+        if (previousEntry) {
+            collectibleContracts[previousIndex] = newEntry;
+        } else {
+            collectibleContracts.push(newEntry);
+        }
+
+        this.updateNestedCollectibleState(collectibleContracts, ALL_COLLECTIBLES_CONTRACTS_STATE_KEY);
+
+        return Promise.resolve(collectibleContracts);
+    }
+
+    /**
+     * Query for tokenURI for a given asset.
+     *
+     * @param address - ERC721 asset contract address.
+     * @param tokenId - ERC721 asset identifier.
+     * @returns Promise resolving to the 'tokenURI'.
+     */
+    getERC721TokenURI = async (address, tokenId) => {
+        const provider = this._getProvider();
+        let tokenURI = null;
+
+        try {
+            const contract = new dnerojs.Contract(address, DNC721ABI, provider);
+            tokenURI = await contract.tokenURI(tokenId);
+        }
+        catch (e){
+
+        }
+
+        return tokenURI;
+    }
+
+    async getCollectibleURIAndStandard(contractAddress, tokenId) {
+        // try ERC721 uri
+        try {
+            const uri = await this.getERC721TokenURI(contractAddress, tokenId);
+            return [uri, ERC721];
+        } catch {
+            // Ignore error
+        }
+
+        // TODO try ERC1155 uri
+
+        return [null, null];
+    }
+
+    /**
+     * Request individual collectible information from contracts that follows Metadata Interface.
+     *
+     * @param contractAddress - Hex address of the collectible contract.
+     * @param tokenId - The collectible identifier.
+     * @returns Promise resolving to the current collectible name and image.
+     */
+    async getCollectibleInformationFromTokenURI(contractAddress, tokenId) {
+        const result = await this.getCollectibleURIAndStandard(
+            contractAddress,
+            tokenId,
+        );
+        let tokenURI = result[0];
+        const standard = result[1];
+
+        try {
+            const response = await fetch(tokenURI);
+            const object = await response.json();
+            // TODO: Check image_url existence. This is not part of EIP721 nor EIP1155
+            const image = Object.prototype.hasOwnProperty.call(object, 'image')
+                ? 'image'
+                : /* istanbul ignore next */ 'image_url';
+
+            return {
+                image: object[image],
+                name: object.name,
+                description: object.description,
+                standard,
+                favorite: false,
+            };
+        } catch {
+            return {
+                image: null,
+                name: null,
+                description: null,
+                standard: standard || null,
+                favorite: false,
+            };
+        }
+    }
+
+    /**
+     * Request individual collectible information (name, image url and description).
+     *
+     * @param contractAddress - Hex address of the collectible contract.
+     * @param tokenId - The collectible identifier.
+     * @returns Promise resolving to the current collectible name and image.
+     */
+    async getCollectibleInformation(contractAddress, tokenId) {
+        let blockchainMetadata = {};
+
+        try {
+            blockchainMetadata = await this.getCollectibleInformationFromTokenURI(contractAddress, tokenId,);
+        } catch (e) {
+
+        }
+
+        return {
+            name: blockchainMetadata.name ?? null,
+            description: blockchainMetadata.description ?? null,
+            image: blockchainMetadata.image ?? null,
+            standard: blockchainMetadata.standard ?? null,
+        };
+    }
+
+    compareCollectiblesMetadata(newCollectibleMetadata, collectible) {
+        const keys = [
+            'image',
+            'backgroundColor',
+            'imagePreview',
+            'imageThumbnail',
+            'imageOriginal',
+            'animation',
+            'animationOriginal',
+            'externalLink',
+        ];
+        const differentValues = keys.reduce((value, key) => {
+            if (
+                newCollectibleMetadata[key] &&
+                newCollectibleMetadata[key] !== collectible[key]
+            ) {
+                return value + 1;
+            }
+            return value;
+        }, 0);
+        return differentValues > 0;
+    }
+
+    /**
+     * Adds an individual collectible to the stored collectible list.
+     *
+     * @param address - Hex address of the collectible contract.
+     * @param tokenId - The collectible identifier.
+     * @param isOwner - If the user owns this NFT
+     * @returns Promise resolving to the current collectible list.
+     */
+    async updateIndividualCollectible(address, tokenId, isOwner) {
+        try {
+            const {allCollectibles, selectedAddress, network} = this.store.getState();
+            const chainId = network.chainId;
+
+            const collectibles = allCollectibles[selectedAddress]?.[chainId] || [];
+
+            const newCollectibles = _.map(collectibles, ((collectible) => {
+                if(collectible.address.toLowerCase() === address.toLowerCase()
+                    && collectible.tokenId === tokenId){
+                    return Object.assign({}, collectible, {
+                        isCurrentlyOwned: isOwner
+                    });
+                }
+                else{
+                    return collectible
+                }
+            }));
+            this.updateNestedCollectibleState(
+                newCollectibles,
+                ALL_COLLECTIBLES_STATE_KEY
+            );
+
+            return newCollectibles;
+        }
+        catch (e){
+            console.log('updateIndividualCollectible :: error == ');
+            console.log(e);
+
+            throw e;
+        }
+    }
+
+    /**
+     * Adds an individual collectible to the stored collectible list.
+     *
+     * @param address - Hex address of the collectible contract.
+     * @param tokenId - The collectible identifier.
+     * @param collectibleMetadata - Collectible optional information (name, image and description).
+     * @param collectibleContract - An object containing contract data of the collectible being added.
+     * @returns Promise resolving to the current collectible list.
+     */
+    async addIndividualCollectible(address, tokenId, collectibleMetadata, collectibleContract,) {
+        try {
+            const {allCollectibles, selectedAddress, network} = this.store.getState();
+            const chainId = network.chainId;
+
+            const collectibles = allCollectibles[selectedAddress]?.[chainId] || [];
+
+            const existingEntry = collectibles.find((collectible) => collectible.address.toLowerCase() === address.toLowerCase()
+                && collectible.tokenId === tokenId);
+
+            if (existingEntry) {
+                const differentMetadata = this.compareCollectiblesMetadata(
+                    collectibleMetadata,
+                    existingEntry);
+
+                if (differentMetadata) {
+                    // TODO: Switch to indexToUpdate
+                    const indexToRemove = collectibles.findIndex(
+                        (collectible) =>
+                            collectible.address.toLowerCase() === address.toLowerCase() &&
+                            collectible.tokenId === tokenId,
+                    );
+                    /* istanbul ignore next */
+                    if (indexToRemove !== -1) {
+                        collectibles.splice(indexToRemove, 1);
+                    }
+                } else {
+                    return collectibles;
+                }
+            }
+
+            const isOwner = await this.isCollectibleOwner(selectedAddress, address, tokenId);
+
+            if(!isOwner){
+                throw new Error('You do not own this NFT.');
+            }
+
+            const newEntry = {
+                address,
+                tokenId,
+                favorite: existingEntry?.favorite || false,
+                isCurrentlyOwned: isOwner,
+                ...collectibleMetadata,
+            };
+
+            const newCollectibles = [...collectibles, newEntry];
+            this.updateNestedCollectibleState(
+                newCollectibles,
+                ALL_COLLECTIBLES_STATE_KEY
+            );
+
+            if (this.onCollectibleAdded) {
+                this.onCollectibleAdded({
+                    address,
+                    symbol: collectibleContract.symbol,
+                    tokenId: tokenId.toString(),
+                    standard: collectibleMetadata.standard
+                });
+            }
+
+            return newCollectibles;
+        }
+        catch (e){
+            console.log('addIndividualCollectible :: error == ');
+            console.log(e);
+
+            throw e;
+        }
+    }
+
+    /**
+     * Adds a collectible and respective collectible contract to the stored collectible and collectible contracts lists.
+     *
+     * @param address - Hex address of the collectible contract.
+     * @param tokenId - The collectible identifier.
+     * @returns Promise resolving to the current collectible list.
+     */
+    async addCollectible(address, tokenId) {
+        const newCollectibleContracts = await this.addCollectibleContract(address);
+        const collectibleMetadata = await this.getCollectibleInformation(address, tokenId);
+
+        // If collectible contract was not added, do not add individual collectible
+        const collectibleContract = newCollectibleContracts.find((contract) => contract.address.toLowerCase() === address.toLowerCase(),);
+
+        // If collectible contract information, add individual collectible
+
+        if (collectibleContract) {
+            await this.addIndividualCollectible(
+                address,
+                tokenId,
+                collectibleMetadata,
+                collectibleContract);
+        }
+    }
+
+    /**
+     * Adds a collectible and respective collectible contract to the stored collectible and collectible contracts lists.
+     *
+     * @param address - Hex address of the collectible contract.
+     * @param tokenId - The collectible identifier.
+     * @returns Promise resolving to the current collectible list.
+     */
+    async addCollectibles(address) {
+        const provider = this._getProvider();
+        const selectedAddress = this.getSelectedAddress();
+        const contract = new dnerojs.Contract(address, DNC721ABI, provider);
+        const balance = await contract.balanceOf(selectedAddress);
+
+        for(let idx = 0; idx < balance.toNumber(); idx++){
+            const tokenId = await contract.tokenOfOwnerByIndex(selectedAddress, idx);
+            const tokenIdStr = tokenId.toString();
+            await this.addCollectible(address, tokenIdStr);
+        }
+    }
+
+    /**
+     * Removes an individual collectible to the stored collectible list.
+     *
+     * @param address - Hex address of the collectible contract.
+     * @param tokenId - The collectible identifier.
+     * @returns Promise resolving to the current collectible list.
+     */
+    async removeIndividualCollectible(address, tokenId) {
+        try {
+            const {allCollectibles, selectedAddress, network} = this.store.getState();
+            const chainId = network.chainId;
+
+            const collectibles = allCollectibles[selectedAddress]?.[chainId] || [];
+            const newCollectibles = _.filter(collectibles, ((collectible) => {
+                return !(collectible.address.toLowerCase() === address.toLowerCase()
+                    && collectible.tokenId === tokenId);
+            }));
+
+            this.updateNestedCollectibleState(
+                newCollectibles,
+                ALL_COLLECTIBLES_STATE_KEY
+            );
+
+            if (this.onCollectibleRemoved) {
+                this.onCollectibleRemoved({
+                    address,
+                    tokenId: tokenId.toString(),
+                });
+            }
+
+            return newCollectibles;
+        }
+        catch (e){
+            console.log('removeIndividualCollectible :: error == ');
+            console.log(e);
+        }
+    }
+
+    /**
+     * Adds a collectible and respective collectible contract to the stored collectible and collectible contracts lists.
+     *
+     * @param address - Hex address of the collectible contract.
+     * @param tokenId - The collectible identifier.
+     * @returns Promise resolving to the current collectible list.
+     */
+    async removeCollectible(address, tokenId) {
+        await this.removeIndividualCollectible(
+            address,
+            tokenId);
+    }
+
+    async refreshCollectiblesOwnership(collectionAddress = null, tokenId = null){
+        const { collectibleContracts, collectibles } = this._getCollectibleRelatedStates();
+        const collectibleContractsToCheck = (_.isNil(collectionAddress) ? collectibleContracts : _.filter((collectibleContract) => {
+            return (collectibleContract.address.toLowerCase() === collectionAddress.toLowerCase());
+        }, collectibleContracts));
+        const selectedAddress = this.getSelectedAddress();
+
+        for(const collectibleContract of collectibleContractsToCheck){
+            for(const collectible of collectibles){
+                if(collectible.address.toLowerCase() === collectibleContract.address.toLowerCase()){
+                    if(_.isNil(tokenId) || collectible.tokenId === tokenId){
+                        const isOwner = await this.isCollectibleOwner(selectedAddress, collectibleContract.address, collectible.tokenId);
+                        await this.updateIndividualCollectible(collectibleContract.address, collectibleContract.tokenId, isOwner);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * A getter for the `collectibles` property
+     *
+     * @returns {Array} The current array of AddedCollectible objects
+     *
+     */
+    getCollectibles() {
+        return this.store.getState().collectibles;
     }
 
     /**
@@ -384,11 +979,11 @@ export default class PreferencesController  extends EventEmitter {
 
     /**
      * Updates the `network` property.
-     * @param {object} network - {chainId: String}
+     * @param {object} network - {chainId: String, rpcUrl: String}
      * @returns {Promise<Boolean>} Promises a new object; the updated preferences object.
      */
     setNetwork(network) {
-        if(network.chainId === undefined || network.chainId === null){
+        if(_.isNil(network.chainId) || _.isNil(network.rpcUrl)){
             throw new Error('PreferencesController :: setNetwork - network is invalid');
         }
 
@@ -417,8 +1012,7 @@ export default class PreferencesController  extends EventEmitter {
         let delegatedSentryNodes = null;
 
         try {
-            //const url = `https://api.dnerochain.org/v1/sentry/delegated-nodes`;
-            const url = `http://143.198.132.249:7554/api/v1/sentry/delegated-nodes`;
+            const url = `https://stake-api.dnerochain.xyz/v1/sentry/delegated-nodes`;
             const response = await fetch(url);
             const responseJson = await response.json();
             delegatedSentryNodes = responseJson;

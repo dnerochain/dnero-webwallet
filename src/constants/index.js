@@ -1,11 +1,21 @@
+import _ from 'lodash';
 import * as dnerojs from '@dnerolabs/dnero-js';
-import DneroJS from "../libs/dnerojs.esm";
 
 export const SingleCallTokenBalancesAddressByChainId = {
     [dnerojs.networks.ChainIds.Mainnet]: '0xb6ecbc094abd0ff7cf030ec9e81f6ca8045b87f9',
     [dnerojs.networks.ChainIds.Testnet]: '0xf0cfe34a7e053520f08bf0a982391810ece9c582',
-    [dnerojs.networks.ChainIds.Privatenet]: '0xedba30e32e11ae95ca9c000b8de97c7af087c7de'
+    [dnerojs.networks.ChainIds.Privatenet]: '0xb19271bf84ddd19fe5e580983414a1840123e871',
+    // All subchains will use the contact from the genesis
+    'tsub*': '0x29b2440db4A256B0c1E6d3B4CDcaA68E2440A08f'
 };
+
+export function getSingleCallTokenBalancesAddressByChainId(chainId){
+    if(_.startsWith(chainId, 'tsub')){
+        return SingleCallTokenBalancesAddressByChainId['tsub*'];
+    }
+
+    return SingleCallTokenBalancesAddressByChainId[chainId];
+}
 
 export const DDropStakingAddressByChainId = {
     [dnerojs.networks.ChainIds.Mainnet]: '0xA89c744Db76266ecA60e2b0F62Afcd1f8581b7ed',
@@ -17,10 +27,18 @@ export const DDropAddressByChainId = {
     [dnerojs.networks.ChainIds.Testnet]: '0x08a0c0e8EFd07A98db11d79165063B6Bc2469ADF',
 };
 
+export const WDneroAddressByChainId = {
+	//WDnero - Wrapped Contract Address
+    [dnerojs.networks.ChainIds.Mainnet]: '0x88e8ec59e782c3e7843ed45e128152707b30d78e',
+	//******
+    [dnerojs.networks.ChainIds.Testnet]: '0x90e6ca1087a2340da858069cb8d78d595e4ac798',
+    [dnerojs.networks.ChainIds.Privatenet]: '0x119134418c03e4d469b45259e74c2848a19b6509',
+};
+
 export const StakePurposeForDDROP = 1000;
 
 export const Urls = {
-    PreventingLostTokens: 'https://docs.dnerochain.org/docs/preventing-lost-eth-erc20-tokens'
+    PreventingLostTokens: 'https://docs.dneroprotocol.io/docs/preventing-lost-eth-erc20-tokens'
 };
 
 export const FaucetAvailable = false;

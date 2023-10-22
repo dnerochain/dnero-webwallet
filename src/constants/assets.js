@@ -1,16 +1,19 @@
 import _ from 'lodash';
 import * as dnerojs from '@dnerolabs/dnero-js';
-import {DDropAddressByChainId} from './index';
+import {DDropAddressByChainId, WDneroAddressByChainId} from './index';
 
-const {tokensByChainId} = require('@dnerolabs/dnc20-contract-metadata');
+const {getKnownToken} = require('@dnerolabs/wallet-metadata');
+
+// TOKEN STANDARDS
+const ERC721 = 'ERC721';
+const ERC1155 = 'ERC1155';
+const ERC20 = 'ERC20';
 
 const getTokenIconUrl = (fileName) => {
     if(_.isEmpty(fileName)){
         return null;
     }
-    return `https://s3.us-east-2.amazonaws.com/assets.dnerochain.org/tokens/${fileName}`;
-    // return `https://assets.dnerochain.org/tokens/${fileName}`;
-	// return `https://wallet.dnerochain.xyz/assets/tokens/${fileName}`;
+    return `https://assets.dnerochain.xyz/tokens/${fileName}`;
 };
 
 const DneroAsset = {
@@ -38,20 +41,48 @@ const NativeAssets = [
     DTokenAsset
 ];
 
-const DDropAsset = (chainId) => {
-    const ddropAddress = DDropAddressByChainId[chainId];
-    let DNC20Asset = null;
+const NativeAssetsForSubchain = [
+    Object.assign({}, DTokenAsset, {
+        symbol: `v${DTokenAsset.symbol}`
+    })
+];
 
-    if(ddropAddress){
+const DDropAsset = (chainId) => {
+    const address = DDropAddressByChainId[chainId];
+    let DNC20Asset = null;
+    const knownToken = getKnownToken(chainId, address);
+
+    if(address){
         DNC20Asset = {
-            id: ddropAddress,
+            id: address,
             name: 'DDROP',
             symbol: 'DDROP',
-            contractAddress: ddropAddress,
-            address: ddropAddress,
+            contractAddress: address,
+            address: address,
             decimals: 18,
-            iconUrl: getTokenIconUrl(_.get(tokensByChainId, [chainId, ddropAddress, 'logo'])),
-            balanceKey: ddropAddress
+            iconUrl:  knownToken?.logoUrl,
+            balanceKey: address
+        };
+    }
+
+    return DNC20Asset;
+};
+
+const WDneroAsset = (chainId) => {
+    const address = WDneroAddressByChainId[chainId];
+    let DNC20Asset = null;
+    const knownToken = getKnownToken(chainId, address);
+
+    if(address){
+        DNC20Asset = {
+            id: address,
+            name: 'wDNERO',
+            symbol: 'wDNERO',
+            contractAddress: address,
+            address: address,
+            decimals: 18,
+            iconUrl:  knownToken?.logoUrl,
+            balanceKey: address
         };
     }
 
@@ -59,29 +90,37 @@ const DDropAsset = (chainId) => {
 };
 
 const DefaultAssets = (chainId) => {
-    const ddropAddress = DDropAddressByChainId[chainId];
     let DNC20Assets = [];
     let ddropAsset = DDropAsset(chainId);
+    let wDneroAsset = WDneroAsset(chainId);
 
-    if(ddropAddress){
+    if(ddropAsset){
         DNC20Assets.push(ddropAsset);
     }
+    if(wDneroAsset){
+        DNC20Assets.push(wDneroAsset);
+    }
 
-    return _.concat(NativeAssets, DNC20Assets);
+    return _.concat((_.startsWith(chainId, 'tsub') ? NativeAssetsForSubchain : NativeAssets), DNC20Assets);
 };
 
 const getAllAssets = (chainId, tokens) => {
-    const ddropAddress = DDropAddressByChainId[chainId];
+    const ddropAddress = DDropAddressByChainId[chainId]?.toLowerCase();
+    const wDneroAddress = WDneroAddressByChainId[chainId]?.toLowerCase();
     const tokenAssets = tokens.map(tokenToAsset);
-    const tokenAssetsWithoutTdrop = _.filter(tokenAssets, (asset) => {
-        return asset.contractAddress?.toLowerCase() !== ddropAddress?.toLowerCase();
+    const tokenAssetsWithoutDefaultDNC20s = _.filter(tokenAssets, (asset) => {
+        const address = asset.contractAddress?.toLowerCase();
+        return (address !== ddropAddress && address !== wDneroAddress);
     });
 
-    return _.concat(DefaultAssets(chainId), tokenAssetsWithoutTdrop);
+    return _.concat(DefaultAssets(chainId), tokenAssetsWithoutDefaultDNC20s);
 };
 
 const tokenToAsset = (token) => {
-    const knownToken = (tokensByChainId[dnerojs.networks.ChainIds.Mainnet][token.address] || tokensByChainId[dnerojs.networks.ChainIds.Testnet][token.address]);
+    const knownToken = (
+        getKnownToken(dnerojs.networks.ChainIds.Mainnet, token.address) ||
+        getKnownToken(dnerojs.networks.ChainIds.Testnet, token.address)
+    );
 
     return {
         id: token.address,
@@ -89,7 +128,7 @@ const tokenToAsset = (token) => {
         symbol: token.symbol,
         contractAddress: token.address,
         decimals: token.decimals,
-        iconUrl: (knownToken ? getTokenIconUrl(knownToken.logo) : null),
+        iconUrl: (knownToken ? knownToken.logoUrl : null),
         balanceKey: token.address
     };
 };
@@ -100,8 +139,13 @@ export {
     DneroAsset,
     DTokenAsset,
     DDropAsset,
+    WDneroAsset,
 
     tokenToAsset,
 
     getAllAssets,
+
+    ERC721,
+    ERC1155,
+    ERC20
 };

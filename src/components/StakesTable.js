@@ -9,7 +9,7 @@ function stakeTypeToNodeType(stakeType){
     if(stakeType === 'vcp'){
         return 'Validator';
     }
-    else if(stakeType === 'gcp'){
+    else if(stakeType === 'scp'){
         return 'Sentry';
     }
     else if(stakeType === 'eenp'){
@@ -18,7 +18,7 @@ function stakeTypeToNodeType(stakeType){
 }
 
 function stakeTypeToTokenUrl(stakeType){
-    if(stakeType === 'vcp' || stakeType === 'gcp'){
+    if(stakeType === 'vcp' || stakeType === 'scp'){
         return "/img/tokens/dnero_large@2x.png";
     }
     else if(stakeType === 'eenp'){

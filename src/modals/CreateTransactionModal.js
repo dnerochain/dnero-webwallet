@@ -12,6 +12,9 @@ import {updateAccountBalances} from "../state/actions/Wallet";
 import {showModal} from "../state/actions/ui";
 import ModalTypes from "../constants/ModalTypes";
 import DelegateVoteTxForm from "../components/transactions/DelegateVoteTxForm";
+import SendCollectibleTxForm from "../components/transactions/SendCollectibleTxForm";
+import WrapDneroTxForm from "../components/transactions/WrapDneroTxForm";
+import UnwrapDneroTxForm from "../components/transactions/UnwrapDneroTxForm";
 
 export class CreateTransactionModal extends React.Component {
     constructor() {
@@ -53,7 +56,7 @@ export class CreateTransactionModal extends React.Component {
     }
 
     render() {
-        const {selectedIdentity, selectedAccount, transactionType, assets, chainId} = this.props;
+        const {selectedIdentity, selectedAccount, transactionType, assets, chainId, collectible} = this.props;
         const title = transactionType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
         return (
@@ -68,6 +71,17 @@ export class CreateTransactionModal extends React.Component {
                                 assets={assets}
                                 chainId={chainId}
                                 onSubmit={this.onSubmit}/>
+                }
+                {
+                    (transactionType === 'send-nft') &&
+                    <SendCollectibleTxForm formRef={this.formRef}
+                                           selectedAccount={selectedAccount}
+                                           collectible={collectible}
+                                           chainId={chainId}
+                                           onSubmit={(formData) => {
+                                               // Inject the collectible
+                                               this.onSubmit(Object.assign({}, formData, {collectible: collectible}))
+                                           }}/>
                 }
                 {
                     (transactionType === 'deposit-stake') &&
@@ -94,6 +108,22 @@ export class CreateTransactionModal extends React.Component {
                                         chainId={chainId}
                                         onSubmit={this.onSubmit}/>
                 }
+                {
+                    (transactionType === 'wrap-dnero') &&
+                    <WrapDneroTxForm formRef={this.formRef}
+                                     selectedAccount={selectedAccount}
+                                     assets={assets}
+                                     chainId={chainId}
+                                     onSubmit={this.onSubmit}/>
+                }
+                {
+                    (transactionType === 'unwrap-dnero') &&
+                    <UnwrapDneroTxForm formRef={this.formRef}
+                                       selectedAccount={selectedAccount}
+                                       assets={assets}
+                                       chainId={chainId}
+                                       onSubmit={this.onSubmit}/>
+                }
                 <div className={'CreateTransactionModal__footer'}>
                     <GradientButton onClick={this.onNextClick}
                                     title={'Next'}
@@ -105,7 +135,7 @@ export class CreateTransactionModal extends React.Component {
 }
 
 const mapStateToProps = (state, props) => {
-    const {transactionType} = props;
+    const {transactionType, collectible} = props;
     const {dneroWallet} = state;
     const selectedAddress = dneroWallet.selectedAddress;
     const identities = dneroWallet.identities;
@@ -115,6 +145,8 @@ const mapStateToProps = (state, props) => {
 
     return {
         transactionType: transactionType,
+
+        collectible: collectible,
 
         selectedAddress: selectedAddress,
         selectedIdentity: identities[selectedAddress],

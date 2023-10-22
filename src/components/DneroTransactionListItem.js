@@ -9,7 +9,7 @@ import Dnero from '../services/Dnero';
 class DneroTransactionListItem extends React.Component {
     render() {
         let { transaction } = this.props;
-        let {inputs, outputs, timestamp, bound, hash, is_local} = transaction;
+        let {inputs, outputs, timestamp, bound, hash, is_local, chainId} = transaction;
         let input = (inputs ? inputs[0] : null);
         let output = (outputs ? outputs[0] : null);
         let from = _.get(input, ['address']);
@@ -45,18 +45,25 @@ class DneroTransactionListItem extends React.Component {
                 </div>
 
                 <div className="DneroTransactionListItem__right-container">
-                    <div className="DneroTransactionListItem__amount-container">
-                        <div className="DneroTransactionListItem__amount">{formatNativeTokenAmountToLargestUnit(dneroAmount)}</div>
-                        <img className="DneroTransactionListItem__amount-icon"
-                             src="/img/tokens/dnero_large@2x.png"
-                        />
-                    </div>
-                    <div className="DneroTransactionListItem__amount-container">
-                        <div className="DneroTransactionListItem__amount">{formatNativeTokenAmountToLargestUnit(dtokenAmount)}</div>
-                        <img className="DneroTransactionListItem__amount-icon"
-                             src="/img/tokens/dtoken_large@2x.png"
-                        />
-                    </div>
+                    {
+                        dneroAmount !== '0' &&
+                        <div className="DneroTransactionListItem__amount-container">
+                            <div className="DneroTransactionListItem__amount">{formatNativeTokenAmountToLargestUnit(dneroAmount)}</div>
+                            <img className="DneroTransactionListItem__amount-icon"
+                                 src="/img/tokens/dnero_large@2x.png"
+                            />
+                        </div>
+                    }
+                    {
+                        dtokenAmount !== '0' &&
+                        <div className="DneroTransactionListItem__amount-container">
+                            <div className="DneroTransactionListItem__amount">{formatNativeTokenAmountToLargestUnit(dtokenAmount)}</div>
+                            <img className="DneroTransactionListItem__amount-icon"
+                                 src="/img/tokens/dtoken_large@2x.png"
+                            />
+                        </div>
+                    }
+
                 </div>
             </a>
         );

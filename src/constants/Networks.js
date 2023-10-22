@@ -45,13 +45,11 @@ export const NetworksWithDescriptions = [
 export const NetworksById = zipMap(NetworksWithDescriptions.map(({ id }) => id), NetworksWithDescriptions);
 
 export const NetworkExplorerUrls = {
-//    [Networks.DNERO_MAINNET]: 'https://explorer.dnerochain.xyz',
-	  [Networks.DNERO_MAINNET]: 'http://164.92.81.239:5445',
-//
-//    [Networks.DNERO_TESTNET]: 'https://beta-explorer.dnerochain.org',
-//    [Networks.DNERO_TESTNET_AMBER]: 'https://elite-edge-testnet-explorer.dnerochain.org',
-//    [Networks.DNERO_TESTNET_SAPPHIRE]: 'https://sentry-testnet-explorer.dnerochain.org',
-//    [Networks.DNERO_PRIVATENET]: 'https://smart-contracts-sandbox-explorer.dnerochain.org'
+    [Networks.DNERO_MAINNET]: 'https://explorer.dnerochain.xyz',
+    [Networks.DNERO_TESTNET]: 'https://explorer-testnet.dnerochain.xyz',
+    [Networks.DNERO_TESTNET_AMBER]: 'https://elite-edge-testnet-explorer.dnerochain.xyz',
+    [Networks.DNERO_TESTNET_SAPPHIRE]: 'https://sentry-testnet-explorer.dnerochain.xyz',
+    [Networks.DNERO_PRIVATENET]: 'https://smart-contracts-sandbox-explorer.dnerochain.xyz'
 };
 
 export function isEthereumNetwork(network) {

@@ -2,10 +2,10 @@ import _ from 'lodash';
 import * as dnerojs from '@dnerolabs/dnero-js';
 import BigNumber from 'bignumber.js';
 import ObservableStore from '../utils/ObservableStore';
-import {SingleCallTokenBalancesAddressByChainId, DDropStakingAddressByChainId} from '../constants';
+import {getSingleCallTokenBalancesAddressByChainId, DDropStakingAddressByChainId} from '../constants';
 import {SingleCallTokenBalancesABI, DDropStakingABI} from '../constants/contracts';
 
-const {tokensByChainId} = require('@dnerolabs/dnc20-contract-metadata');
+const walletMetadata = require('@dnerolabs/wallet-metadata');
 const DEFAULT_INTERVAL = 60 * 1000;
 
 /**
@@ -217,7 +217,7 @@ export default class AccountManager {
         const tokens = this._getTokens();
         let tokenAddresses = _.map(tokens, 'address');
         tokenAddresses = _.map(tokenAddresses, _.trim);
-        const deployedContractAddress = SingleCallTokenBalancesAddressByChainId[chainId];
+        const deployedContractAddress = getSingleCallTokenBalancesAddressByChainId(chainId);
 
         if(_.isNil(deployedContractAddress)){
             // TODO not supported... call each token?
@@ -331,8 +331,9 @@ export default class AccountManager {
             const network = this._getNetwork();
             const chainId = network.chainId;
             const explorerUrl = dnerojs.networks.getExplorerUrlForChainId(chainId);
-            const explorerApiUrl = `${explorerUrl}:7554/api`;
-            const listStakesUrl = `${explorerApiUrl}/stake/${address}?hasBalance=true&types[]=vcp&types[]=gcp&types[]=eenp`;
+            //const explorerApiUrl = `${explorerUrl}:7554/api`; //TODO
+	    const explorerApiUrl = `${explorerUrl}/api`;
+            const listStakesUrl = `${explorerApiUrl}/stake/${address}?hasBalance=true&types[]=vcp&types[]=scp&types[]=eenp`;
             const response = await fetch(listStakesUrl);
             const responseJson = await response.json();
             stakes = _.get(responseJson, ['body', 'sourceRecords'], []);
@@ -362,11 +363,12 @@ export default class AccountManager {
     }
 
     async detectNewTokens() {
+        await walletMetadata.sync();
         const selectedAddress = this._preferencesController.getSelectedAddress();
         const provider = this._getProvider();
         const network = this._getNetwork();
         const chainId = network.chainId;
-        const knownTokenList = tokensByChainId[chainId];
+        const knownTokenList = walletMetadata.getKnownTokens(chainId);
         const tokens = this._getTokens();
         let tokenAddresses = _.map(tokens, 'address');
         let trackedTokens = new Set(_.map(tokenAddresses, _.trim));
@@ -386,7 +388,7 @@ export default class AccountManager {
             tokensToDetect.slice(0, 1000),
             tokensToDetect.slice(1000, tokensToDetect.length - 1),
         ];
-        const balanceCheckContract = new dnerojs.Contract(SingleCallTokenBalancesAddressByChainId[chainId], SingleCallTokenBalancesABI, provider);
+        const balanceCheckContract = new dnerojs.Contract(getSingleCallTokenBalancesAddressByChainId(chainId), SingleCallTokenBalancesABI, provider);
 
         for (const tokensSlice of sliceOfTokensToDetect) {
             let result;

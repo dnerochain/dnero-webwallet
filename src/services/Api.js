@@ -1,6 +1,4 @@
-//
-//const BASE_URL = "https://api-wallet.dnerochain.org";
-const BASE_URL = "http://143.198.132.249:7554/api"; //WebWallet_DEDICATED_ETH-RPC_API
+const BASE_URL = "https://wallet-api.dnerochain.xyz";
 
 const DEFAULT_HEADERS = {
     'Accept': 'application/json',
@@ -165,7 +163,7 @@ export default class Api {
     //
 
     static callFaucet(address, faucetId) {
-        let url = `https://public-faucet.dnerochain.org/dtoken_faucet`;
+        let url = `https://public-faucet.dnerochain.xyz/dtoken_faucet`;
 
         return sendRequest(url, "GET", null, {
             address: address.toLowerCase(),
@@ -178,8 +176,7 @@ export default class Api {
     //
 
     static fetchSentryNodeDelegates() {
-        //let url = `https://api-wallet.dnerochain.org/v1/sentry/delegated-nodes`;
-        let url = `http://143.198.132.249:7554/api/v1/sentry/delegated-nodes`;
+        let url = `https://stake-api.dnerochain.xyz/v1/sentry/delegated-nodes`;
 
         return sendRequest(url, "GET", null, null);
     }

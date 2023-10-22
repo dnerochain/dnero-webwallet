@@ -11,6 +11,8 @@ import {showModal} from "../state/actions/ui";
 import ModalTypes from "../constants/ModalTypes";
 import {getNetworkName} from "../constants/Networks";
 import NetworkSelector from "./NetworkSelector";
+import {NavLink} from "react-router-dom";
+import config from "../Config";
 
 const classNames = require('classnames');
 
@@ -50,7 +52,7 @@ class NavBar extends React.Component {
     renderAccountIfNeeded(){
         let address = Wallet.getWalletAddress();
 
-        if(address){
+        if(address && !config.isEmbedMode){
             return (
                 <div className="NavBar__account">
                     <div className="NavBar__wallet">
@@ -66,10 +68,18 @@ class NavBar extends React.Component {
                             <img src="/img/icons/copy@2x.png"/>
                         </a>
                     </div>
-                    <a className="NavBar__logout"
-                       onClick={this.logout}>
-                        Log out
-                    </a>
+                    <div>
+                        <NavLink className="NavBar__settings"
+                           to="/wallet/settings"
+                        >
+                            Settings
+                        </NavLink>
+                        <a className="NavBar__logout"
+                           onClick={this.logout}>
+                            Log out
+                        </a>
+                    </div>
+
                 </div>
             );
         }

@@ -1,9 +1,13 @@
+import _ from 'lodash';
 import Dnero from './services/Dnero';
 import Networks, {canViewSmartContracts} from './constants/Networks';
 import DneroJS from "./libs/dnerojs.esm";
+import {getBlockchainConfig} from "./constants/Blockchain";
 
 export function isStakingAvailable(){
-    return true;
+    const network = Dnero.getChainID();
+
+    return !network.startsWith('tsub');
 }
 
 export function canStakeFromHardwareWallet(){
@@ -14,6 +18,13 @@ export function areSmartContractsAvailable(){
     const network = Dnero.getChainID();
 
     return canViewSmartContracts(network);
+}
+
+export function areCrossChainTransactionsAvailable(){
+    const network = Dnero.getChainID();
+    let config = getBlockchainConfig(network);
+
+    return (network.startsWith('tsub') || !_.isNil(config));
 }
 
 export function getMinStakeAmount(purpose){
@@ -42,7 +53,7 @@ export function getMaxStakeAmount(purpose){
 
 export function getMaxDelegatedStakeAmount(purpose){
     if(purpose === DneroJS.StakePurposes.StakeForSentry){
-        return 20000.0;
+        return 10000.0;
     }
 
     //Unknown

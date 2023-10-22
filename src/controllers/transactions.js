@@ -27,6 +27,7 @@ export default class TransactionsController extends EventEmitter{
         this._getProvider = opts.getProvider;
 
         this._updateAccounts = opts.updateAccounts;
+        this._detectNewTokens = opts.detectNewTokens;
 
         this.pendingTransactionRequests = new Map();
     }
@@ -142,6 +143,10 @@ export default class TransactionsController extends EventEmitter{
 
             // Refresh balances because we just sent a tx
             this._updateAccounts();
+            setTimeout(async () => {
+                await this._detectNewTokens();
+                this._updateAccounts();
+            }, 2000);
 
             approval.resolve(result);
 
@@ -212,14 +217,17 @@ export default class TransactionsController extends EventEmitter{
         try {
             const network = this.preferencesController.getNetwork();
             const chainId = network.chainId;
-            const explorerUrl = dnerojs.networks.getExplorerUrlForChainId(chainId);
-            const explorerApiUrl = `${explorerUrl}:8443/api`;
+            const explorerUrl = network.explorerUrl || dnerojs.networks.getExplorerUrlForChainId(chainId);
+            //const explorerApiUrl = `${explorerUrl}:7554/api`; //TODO
+	    const explorerApiUrl = `${explorerUrl}/api`;
             const listStakesUrl = `${explorerApiUrl}/accounttx/${address}`;
             const response = await fetch(listStakesUrl);
             const responseJson = await response.json();
             txs = _.get(responseJson, ['body'], []);
             txs = _.map(txs, (tx) => {
-                return this._transformTransaction(tx, address);
+                return Object.assign({}, this._transformTransaction(tx, address), {
+                    chainId: chainId
+                });
             });
             txs = _.filter(txs, (tx) => {
                 return !_.isNil(tx);

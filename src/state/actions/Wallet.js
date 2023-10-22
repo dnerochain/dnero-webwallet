@@ -11,18 +11,17 @@ import {onLine} from "../../utils/Utils";
 import Config from "../../Config";
 import {hideLoader, hideModal, showLoader} from "./ui";
 import Dnero from "../../services/Dnero";
+import config from "../../Config";
 
 
-export function setNetwork(networkId){
-    Dnero.setChainID(networkId);
-    Wallet.controller.preferencesController.setNetwork({
-        chainId: networkId
-    });
+export function setNetwork(network){
+    Dnero.setChainID(network.chainId);
+    Wallet.controller.preferencesController.setNetwork(network);
 
     return async function(dispatch, getState){
         dispatch({
                 type: SET_NETWORK,
-                network: networkId
+                network: network.chainId
             }
         );
     };
@@ -72,6 +71,10 @@ export function unlockWallet(strategy, password, data){
             else{
                 //Navigate to the offline until they enable their network again
                 Router.push('/offline');
+            }
+
+            if(config.isEmbedMode && window.parent){
+                window.parent.postMessage(JSON.stringify({"event": "wallet_unlocked"}), "*");
             }
         }
     };
@@ -136,13 +139,14 @@ export function updateAccountStakes(address, shouldShowLoader){
 // Tokens
 //
 
-export function addToken(tokenData) {
+export function addToken(tokenData, chainId) {
     return async (dispatch) => {
         try {
             dispatch(showLoader());
 
             const result = await Wallet.controller.RPCApi.addToken({
-                token: tokenData
+                token: tokenData,
+                chainId: chainId
             });
 
             dispatch(hideModal());
@@ -165,6 +169,99 @@ export function removeToken(address) {
 
             const result = await Wallet.controller.RPCApi.removeToken({
                 address: address
+            });
+
+            dispatch(hideLoader());
+
+            return result;
+        }
+        catch (error) {
+            dispatch(hideLoader());
+            return false;
+        }
+    };
+}
+
+
+//
+// Collectibles
+//
+
+export function refreshCollectiblesOwnership(args) {
+    return async (dispatch) => {
+        try {
+            dispatch(showLoader());
+
+            const result = await Wallet.controller.RPCApi.refreshCollectiblesOwnership({
+                address: args.address,
+                tokenId: args.tokenId
+            });
+
+            dispatch(hideLoader());
+
+            return result;
+        }
+        catch (error) {
+            dispatch(hideLoader());
+            Alerts.showError(error.message);
+            return false;
+        }
+    };
+}
+
+export function addCollectible(collectibleData) {
+    return async (dispatch) => {
+        try {
+            dispatch(showLoader());
+
+            const result = await Wallet.controller.RPCApi.addCollectible({
+                collectible: collectibleData
+            });
+
+            dispatch(hideModal());
+
+            dispatch(hideLoader());
+
+            return result;
+        }
+        catch (error) {
+            dispatch(hideLoader());
+            Alerts.showError(error.message);
+            return false;
+        }
+    };
+}
+
+export function addCollectibles(collectibleData) {
+    return async (dispatch) => {
+        try {
+            dispatch(showLoader());
+
+            const result = await Wallet.controller.RPCApi.addCollectibles({
+                address: collectibleData.address
+            });
+
+            dispatch(hideModal());
+
+            dispatch(hideLoader());
+
+            return result;
+        }
+        catch (error) {
+            dispatch(hideLoader());
+            Alerts.showError(error.message);
+            return false;
+        }
+    };
+}
+
+export function removeCollectible(collectibleData) {
+    return async (dispatch) => {
+        try {
+            dispatch(showLoader());
+
+            const result = await Wallet.controller.RPCApi.removeCollectible({
+                collectible: collectibleData
             });
 
             dispatch(hideLoader());

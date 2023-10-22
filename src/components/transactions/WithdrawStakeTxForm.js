@@ -64,7 +64,7 @@ export default function WithdrawStakeTxForm(props){
                             value={dnerojs.constants.StakePurpose.StakeForValidator}>
                         Validator Node
                     </option>
-                    <option key={'validator'}
+                    <option key={'een'}
                             value={dnerojs.constants.StakePurpose.StakeForEliteEdge}>
                         Edge Node
                     </option>

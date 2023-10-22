@@ -4,8 +4,13 @@ import BigNumber from 'bignumber.js';
 import {Ten18} from '@dnerolabs/dnero-js/src/constants';
 import {DefaultAssets, getAllAssets, tokenToAsset} from "../constants/assets";
 import * as dnerojs from "@dnerolabs/dnero-js";
-import {DDropStakingABI, DNC20ABI} from "../constants/contracts";
-import {StakePurposeForDDROP, DDropAddressByChainId, DDropStakingAddressByChainId} from "../constants";
+import {DDropStakingABI, DNC20ABI, DNC721ABI, WDneroABI} from "../constants/contracts";
+import {
+    StakePurposeForDDROP,
+    DDropAddressByChainId,
+    DDropStakingAddressByChainId,
+    WDneroAddressByChainId
+} from "../constants";
 
 
 /**
@@ -132,11 +137,11 @@ export function getQueryParameters(str) {
 export function chainIDStringToNumber(chainIDstr) {
     switch(chainIDstr) {
         case Networks.DNERO_MAINNET:
-            return 361;
+            return 5647;
         case Networks.DNERO_PRIVATENET:
-            return 366;
+            return 5652;
         case Networks.DNERO_TESTNET:
-            return 365;
+            return 5651;
     }
     return 0;
 }
@@ -201,7 +206,7 @@ export const isValidAmount = (selectedAccount, asset, amount) => {
         balanceBN = new BigNumber(selectedAccount.balances['dtokenwei']);
     }
     else{
-        // TNT-20 token
+        // DNC-20 token
         amountBN = toDNC20TokenSmallestUnit('' + amount, asset.decimals);
         balanceBN = new BigNumber(selectedAccount.balances[asset.contractAddress]);
     }
@@ -259,6 +264,15 @@ export const formDataToTransaction = async (transactionType, txFormData, dneroWa
             return new dnerojs.transactions.SendTransaction(txData);
         }
     }
+    else if (transactionType === 'send-nft') {
+        const {to, collectible} = txFormData;
+        const {address, tokenId} = collectible;
+
+        // DNC721 collectible
+        const dnc721Contract = new dnerojs.Contract(address, DNC721ABI, null);
+        const safeTransferFrom = dnc721Contract.populateTransaction['safeTransferFrom(address,address,uint256)'];
+        return await safeTransferFrom(selectedAddress, to, tokenId);
+    }
     if(transactionType === 'withdraw-stake'){
         const {holder, purpose, amount} = txFormData;
         const purposeInt = parseInt(purpose);
@@ -278,7 +292,7 @@ export const formDataToTransaction = async (transactionType, txFormData, dneroWa
         else{
             const txData = {
                 holder: holder,
-                purpose: purpose
+                purpose: purposeInt
             };
 
             return new dnerojs.transactions.WithdrawStakeTransaction(txData);
@@ -341,6 +355,24 @@ export const formDataToTransaction = async (transactionType, txFormData, dneroWa
         const delegateTx = await ddropStakingContract.populateTransaction.delegate(address);
 
         return delegateTx;
+    }
+    else if(transactionType === 'wrap-dnero'){
+        const {amount} = txFormData;
+        const wDneroAddress = WDneroAddressByChainId[chainId];
+        const wDneroContract = new dnerojs.Contract(wDneroAddress, WDneroABI, null);
+        const tx = await wDneroContract.populateTransaction.deposit({
+            dneroValue: dnerojs.utils.toWei(amount)
+        });
+
+        return tx;
+    }
+    else if(transactionType === 'unwrap-dnero'){
+        const {amount} = txFormData;
+        const wDneroAddress = WDneroAddressByChainId[chainId];
+        const wDneroContract = new dnerojs.Contract(wDneroAddress, WDneroABI, null);
+        const tx = await wDneroContract.populateTransaction.withdraw(dnerojs.utils.toWei(amount));
+
+        return tx;
     }
 };
 

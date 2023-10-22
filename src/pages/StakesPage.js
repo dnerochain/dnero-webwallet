@@ -28,12 +28,12 @@ const sampleStakes = [
         "withdrawn": false
     },
     {
-        "_id": "gcp_0xe8a650b6e34650f4be29eb5dc97a60263085cea1_0x95944d0f9c86794284abc375616c83b0e6a1a8b7",
+        "_id": "scp_0xe8a650b6e34650f4be29eb5dc97a60263085cea1_0x95944d0f9c86794284abc375616c83b0e6a1a8b7",
         "amount": "2000000000000000000000000",
         "holder": "0xe8a650b6e34650f4be29eb5dc97a60263085cea1",
         "return_height": "18446744073709551615",
         "source": "0x95944d0f9c86794284abc375616c83b0e6a1a8b7",
-        "type": "gcp",
+        "type": "scp",
         "withdrawn": false
     },
     {

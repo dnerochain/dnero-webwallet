@@ -5,7 +5,9 @@ const config = {
 
     defaultDneroChainID: Networks.DNERO_MAINNET,
 
-    faucetAvailable: true
+    faucetAvailable: false,
+
+    isEmbedMode: false,
 };
 
 export default config;

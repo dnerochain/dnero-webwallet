@@ -22,7 +22,7 @@ function sortDneroNetworkTransactionOutputs(walletAddress, outputs){
     }]);
 }
 
-function transformDneroNetworkTransaction(walletAddress, transaction) {
+export function transformDneroNetworkTransaction(walletAddress, transaction) {
     let {outputs} = transaction;
     outputs = sortDneroNetworkTransactionOutputs(walletAddress, outputs);
 
@@ -38,7 +38,7 @@ function transformDneroNetworkTransaction(walletAddress, transaction) {
     address = output['address'];
 
     return Object.assign({}, transaction, {
-        bound: (walletAddress === address ? "inbound" : "outbound"),
+        bound: (_.isEqual(walletAddress.toLowerCase(), address.toLowerCase()) ? "inbound" : "outbound"),
         outputs: outputs
     });
 }

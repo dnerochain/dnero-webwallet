@@ -10,11 +10,8 @@ import TrezorKeyring from '../keyrings/trezor';
 import LedgerKeyring from "../keyrings/ledger";
 import {
     EthereumDerivationPath, EthereumLedgerLiveDerivationPath,
-    EthereumOtherDerivationPath,
-    NumPathsPerPage,
-    DneroDevDerivationPath
+    EthereumOtherDerivationPath
 } from "../services/Wallet";
-import {updateAccountBalances} from "../state/actions/Wallet";
 
 const { EventEmitter } = require('events');
 
@@ -31,17 +28,19 @@ export default class DneroWalletController extends EventEmitter {
         this.memStore = new ComposableObservableStore();
 
         this.preferencesController = new PreferencesController({
-            initState: initState.preferencesController
+            initState: initState.preferencesController,
+            getProvider: this.getProvider,
         });
         this.preferencesController.on('networkChanged', (newNetwork) => {
             const selectedAddress = this.preferencesController.getSelectedAddress();
-            const newProvider = new dnerojs.providers.HttpProvider(newNetwork.chainId);
+            const newProvider = new dnerojs.providers.HttpProvider(newNetwork.chainId, newNetwork.rpcUrl);
             this.setProvider(newProvider);
 
             if(selectedAddress) {
+                this.accountManager.detectNewTokens();
                 this.accountManager.updateAccounts();
                 this.accountManager.updateAccountStakes(selectedAddress);
-                this.accountManager.detectNewTokens();
+
 
                 this.transactionsController.updateAccountTransactions(selectedAddress);
             }
@@ -78,7 +77,8 @@ export default class DneroWalletController extends EventEmitter {
 
             signAndSendTransaction: this.keyringController.signAndSendTransaction.bind(this.keyringController),
 
-            updateAccounts: this.accountManager.updateAccounts.bind(this.accountManager)
+            updateAccounts: this.accountManager.updateAccounts.bind(this.accountManager),
+            detectNewTokens: this.accountManager.detectNewTokens.bind(this.accountManager)
         });
 
         this.store.updateStructure({
@@ -89,7 +89,7 @@ export default class DneroWalletController extends EventEmitter {
         this.preferencesController.store.subscribe((data) => {
             try {
                 if(localStorage){
-                    localStorage.setItem('preferencesController', JSON.stringify(_.pick(data, 'accountTokens')));
+                    localStorage.setItem('preferencesController', JSON.stringify(_.pick(data, ['accountTokens', 'allCollectibles', 'allCollectibleContracts'])));
                 }
             }
             catch (e) {
@@ -101,7 +101,7 @@ export default class DneroWalletController extends EventEmitter {
             keyringController: this.keyringController.memStore,
             preferencesController: this.preferencesController.store,
             transactionsController: this.transactionsController.memStore,
-            accountManager: this.accountManager.store
+            accountManager: this.accountManager.store,
         });
         this.memStore.subscribe((data) => {
             this.sendUpdate();
@@ -192,6 +192,12 @@ export default class DneroWalletController extends EventEmitter {
             addToken: this._addToken.bind(this),
             removeToken: this._removeToken.bind(this),
 
+            // Collectibles
+            refreshCollectiblesOwnership: this._refreshCollectiblesOwnership.bind(this),
+            addCollectible: this._addCollectible.bind(this),
+            addCollectibles: this._addCollectibles.bind(this),
+            removeCollectible: this._removeCollectible.bind(this),
+
             // Preferences
             setSelectedAddress: this._setSelectedAddress.bind(this),
             setSelectedNetwork: this._setSelectedNetwork.bind(this),
@@ -257,10 +263,10 @@ export default class DneroWalletController extends EventEmitter {
     }
 
     async _addToken(args) {
-        const {token} = args;
+        const {token, chainId} = args;
         const {address, symbol, decimals, image} = token;
 
-        const result = await this.preferencesController.addToken(address, symbol, decimals, image);
+        const result = await this.preferencesController.addToken(address, symbol, decimals, image, chainId);
 
         return result;
     }
@@ -269,6 +275,40 @@ export default class DneroWalletController extends EventEmitter {
         const {address} = args;
 
         const result = await this.preferencesController.removeToken(address);
+
+        return result;
+    }
+
+    async _refreshCollectiblesOwnership(args){
+        const {address, tokenId} = args;
+
+        const result = await this.preferencesController.refreshCollectiblesOwnership(address, tokenId);
+
+        return result;
+    }
+
+    async _addCollectible(args) {
+        const {collectible} = args;
+        const {address, tokenId} = collectible;
+
+        const result = await this.preferencesController.addCollectible(address, tokenId);
+
+        return result;
+    }
+
+    async _addCollectibles(args) {
+        const {address} = args;
+
+        const result = await this.preferencesController.addCollectibles(address);
+
+        return result;
+    }
+
+    async _removeCollectible(args) {
+        const {collectible} = args;
+        const {address, tokenId} = collectible;
+
+        const result = await this.preferencesController.removeCollectible(address, tokenId);
 
         return result;
     }

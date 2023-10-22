@@ -15,7 +15,6 @@ import DneroJS from "../libs/dnerojs.esm";
 import {store} from "../state";
 import PageHeader from "../components/PageHeader";
 import {getQueryParameters, zipMap} from "../utils/Utils";
-import Api from "../services/Api";
 import {createSmartContractTransaction} from "../state/actions/Transactions";
 
 const web3 = new Web3("http://localhost");
@@ -48,6 +47,8 @@ function parseJSON(value) {
 }
 
 function isValidByteCode(value) {
+    return true;
+
     const json = parseJSON(value);
 
     return (_.isNil((json && json['object'])) === false);
@@ -349,7 +350,7 @@ class DeployContractContent extends React.Component {
 
     onSubmit = (formData) => {
         const {abi, byteCode, inputs} = formData;
-        const byteCodeJson = parseJSON(byteCode);
+        const byteCodeJson = byteCode;
         const contract = initContract(abi, null);
         const jsonInterface = _.get(contract, ['options', 'jsonInterface']);
         const constructor = getConstructor(jsonInterface);
@@ -372,8 +373,17 @@ class DeployContractContent extends React.Component {
         });
         const encodedParameters = web3.eth.abi.encodeParameters(constructorInputTypes, constructorInputValues).slice(2);
         const from = Wallet.getWalletAddress();
-        const data = byteCodeJson.object + encodedParameters;
+        const data = byteCodeJson + encodedParameters;
         const value = 0;
+
+        console.log('data', data);
+        console.log('value', value);
+        console.log('from', from);
+        console.log('abi', abi);
+        console.log('byteCode', byteCode);
+        console.log('encodedParameters', encodedParameters);
+        console.log('constructorInputTypes', constructorInputTypes);
+        console.log('constructorInputValues', constructorInputValues);
 
         store.dispatch(createSmartContractTransaction(ContractModes.DEPLOY, abi, {
                 from: from,
@@ -461,9 +471,8 @@ class InteractWithContractContent extends React.Component {
             const rawTxBytes = DneroJS.TxSigner.serializeTx(tx);
 
             try{
-                const callResponse = await Api.callSmartContract({data: rawTxBytes.toString('hex').slice(2)}, {network: Dnero.getChainID()});
-                const callResponseJSON = await callResponse.json();
-                const result = _.get(callResponseJSON, 'result');
+                const provider = Wallet.controller.getProvider();
+                const result = await provider.perform("dnero.CallSmartContract", { sctx_bytes: rawTxBytes.toString('hex').slice(2) });
                 const errorMessage  = _.get(result, 'vm_error');
 
                 this.setState({
