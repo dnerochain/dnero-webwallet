@@ -59,6 +59,7 @@ class WalletTokenList extends React.Component {
                         )
                     })
                 }
+				
                 {
                     !config.isEmbedMode &&
                     <a className='AddTokenCTA'
