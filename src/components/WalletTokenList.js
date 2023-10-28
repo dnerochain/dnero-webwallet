@@ -59,8 +59,8 @@ class WalletTokenList extends React.Component {
                         )
                     })
                 }
-
-                {
+{/* Commenting out for later use */}
+                {/* {
                     !config.isEmbedMode &&
                     <a className='AddTokenCTA'
                        onClick={this.onAddTokenClick}
@@ -69,7 +69,7 @@ class WalletTokenList extends React.Component {
                              src={'/img/icons/add-token.svg'}/>
                         <div className={'AddTokenCTA__name'}>Add Token</div>
                     </a>
-                }
+                } */}
 
 
                 {
