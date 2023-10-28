@@ -332,7 +332,7 @@ export default class AccountManager {
             const chainId = network.chainId;
             const explorerUrl = dnerojs.networks.getExplorerUrlForChainId(chainId);
             //const explorerApiUrl = `${explorerUrl}:7554/api`; //TODO
-	    const explorerApiUrl = `${explorerUrl}/api`;
+	        const explorerApiUrl = `${explorerUrl}/api`;
             const listStakesUrl = `${explorerApiUrl}/stake/${address}?hasBalance=true&types[]=vcp&types[]=scp&types[]=eenp`;
             const response = await fetch(listStakesUrl);
             const responseJson = await response.json();
