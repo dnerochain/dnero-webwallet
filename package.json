@@ -1,6 +1,6 @@
 {
   "name": "dnero-wallet-web",
-  "version": "0.1.0",
+  "version": "2.1.0",
   "private": true,
   "dependencies": {
     "@dnerolabs/dnero-js": "git+https://github.com/muroko/dnero-js.git",
