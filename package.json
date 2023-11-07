@@ -3,7 +3,7 @@
   "version": "2.1.0",
   "private": true,
   "dependencies": {
-    "@dnerolabs/dnero-js": "git+https://github.com/muroko/dnero-js.git",
+    "@dnerolabs/dnero-js": "git+https://github.com/muroko/dnero",
     "@dnerolabs/wallet-metadata": "git+https://github.com/muroko/wallet-metadata.git",
     "@ethersproject/bignumber": "^5.7.0",
     "@ledgerhq/hw-app-eth": "^4.72.1",
