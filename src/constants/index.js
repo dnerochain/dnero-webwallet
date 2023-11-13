@@ -29,7 +29,7 @@ export const DDropAddressByChainId = {
 
 export const WDneroAddressByChainId = {
 	//WDnero - Wrapped Contract Address official
-    [dnerojs.networks.ChainIds.Mainnet]: '0x9c8844ae7b3862Be273c2C8830083785A2a7cA5a',
+    [dnerojs.networks.ChainIds.Mainnet]: '0xB86a664962A291A5C0221680FC9Bfc65dd198ea6',
 	//******
     [dnerojs.networks.ChainIds.Testnet]: '0x90e6ca1087a2340da858069cb8d78d595e4ac798',
     [dnerojs.networks.ChainIds.Privatenet]: '0x119134418c03e4d469b45259e74c2848a19b6509',
