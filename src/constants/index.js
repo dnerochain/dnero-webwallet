@@ -28,8 +28,8 @@ export const DDropAddressByChainId = {
 };
 
 export const WDneroAddressByChainId = {
-	//WDnero - Wrapped Contract Address
-    [dnerojs.networks.ChainIds.Mainnet]: '0x88e8ec59e782c3e7843ed45e128152707b30d78e',
+	//WDnero - Wrapped Contract Address official
+    [dnerojs.networks.ChainIds.Mainnet]: '0x99B53f7E3EA5549F7d3d07DB51CdA94a4c692b26',
 	//******
     [dnerojs.networks.ChainIds.Testnet]: '0x90e6ca1087a2340da858069cb8d78d595e4ac798',
     [dnerojs.networks.ChainIds.Privatenet]: '0x119134418c03e4d469b45259e74c2848a19b6509',
